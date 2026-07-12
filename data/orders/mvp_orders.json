@@ -1,0 +1,11 @@
+[
+  {
+    "id": "order_boutique_001",
+    "name": "Serie limitada para boutique privada",
+    "description": "Boutique privada solicita una serie limitada elegante con acabados sobrios.",
+    "reward": 1200,
+    "reputation_gain": 8,
+    "quality_required": 55,
+    "deadline_days": 3
+  }
+]
