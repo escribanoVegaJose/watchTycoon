@@ -9,7 +9,7 @@ Nuevo enfoque para el arranque: primero se construye y gestiona la joyeria, ante
 - En pantalla solo aparece el dinero.
 - La tienda debe sentirse como el espacio principal que el jugador va mejorando.
 
-## Loop MVP Propuesto
+## Loop Inicial Propuesto
 
 1. Entrar en subasta virtual por internet.
 2. Comprar primeras piezas/relojes/lotes baratos.

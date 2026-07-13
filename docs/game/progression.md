@@ -2,7 +2,7 @@
 
 La progresion inicial se basa en reputacion global.
 
-## Desbloqueos MVP
+## Desbloqueos Iniciales
 
 - Nuevas piezas.
 - Mejores materiales.

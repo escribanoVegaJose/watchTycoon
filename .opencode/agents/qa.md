@@ -19,7 +19,7 @@ Tu responsabilidad es encontrar riesgos, bugs y casos limite antes de que llegue
 - Definir criterios de aceptacion.
 - Revisar regresiones.
 
-## Checklist MVP
+## Checklist Inicial
 
 - El jugador no puede gastar dinero negativo salvo que se disene explicitamente deuda.
 - Los pedidos no se pueden entregar sin produccion completada.

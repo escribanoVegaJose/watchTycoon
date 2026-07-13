@@ -1,16 +1,23 @@
-extends Control
+extends Node3D
 
-@onready var money_label: Label = find_child("MoneyLabel", true, false)
+@onready var money_label: Label = %MoneyLabel
+@onready var construction_panel: PanelContainer = %ConstructionPanel
+@onready var construction_button: Button = %ConstructionButton
 
 func _ready() -> void:
 	EventBus.stats_changed.connect(_on_stats_changed)
+	construction_button.pressed.connect(_on_construction_pressed)
+	construction_panel.visible = false
 	_on_stats_changed(GameState.money, GameState.reputation)
 
 func _on_stats_changed(money: int, _reputation: int) -> void:
 	money_label.text = _format_money(money)
 
+func _on_construction_pressed() -> void:
+	construction_panel.visible = not construction_panel.visible
+
 func _format_money(value: int) -> String:
-	var raw := str(value)
+	var raw: String = str(value)
 	var result := ""
 	var count := 0
 	for index in range(raw.length() - 1, -1, -1):

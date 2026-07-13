@@ -25,7 +25,7 @@ Tu responsabilidad es hacer que el juego sea claro, elegante y facil de entender
 - Cada boton importante debe explicar coste, beneficio o consecuencia.
 - El diseno de reloj debe sentirse premium, no como un formulario tecnico.
 - El feedback de dinero, reputacion y produccion debe ser inmediato.
-- Evita interfaces saturadas en el MVP.
+- Evita interfaces saturadas en el alcance inicial.
 
 ## Flujo Inicial Sugerido
 

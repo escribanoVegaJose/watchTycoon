@@ -1,6 +1,6 @@
 # Direccion Artistica
 
-2D elegante, premium, negro, dorado, crema y acero.
+3D elegante, premium, negro, dorado, crema y acero. La estructura base de la joyeria se construye en Godot con geometria simple y materiales editables; los modelos IA se reservan para props especiales.
 
 ## Inspiracion
 
@@ -17,31 +17,31 @@
 - Evitar exceso de brillo barato o estetica casino.
 - Priorizar materiales nobles, precision y calma visual.
 
-## Pipeline Leonardo
+## Pipeline Meshy / IA 3D
 
-1. Generar en Leonardo.
-2. Guardar bruto en `assets/leonardo/raw/`.
-3. Limpiar en Photopea o Krita.
-4. Guardar editado en `assets/leonardo/edited/`.
-5. Exportar PNG o WebP optimizado.
-6. Guardar final en `assets/leonardo/godot_ready/`.
+1. Generar modelos especiales en Meshy.
+2. Guardar bruto en `assets/meshy/raw/`.
+3. Limpiar escala, pivote, materiales y geometria en Blender si hace falta.
+4. Guardar editado en `assets/meshy/edited/`.
+5. Exportar GLB optimizado.
+6. Guardar final en `assets/meshy/godot_ready/`.
 
 ## Prompts Base
 
-### Taller
+### Prop De Joyería
 
 ```text
-luxury watchmaking workshop, elegant 2D game background, black and gold premium color palette, cozy artisan atelier, tycoon game style, no text, no watermark
+luxury jewelry boutique prop, elegant 3D game asset, premium black and gold style, clean PBR materials, optimized geometry, no text, no logos, no brand names, no people
 ```
 
-### Iconos
+### Puerta Premium
 
 ```text
-luxury watch component icon, transparent background, clean 2D game asset, black and gold premium style, no text, no watermark
+luxury jewelry store entrance door, elegant 3D game asset, black metal frame, subtle gold trim, premium boutique style, PBR materials, optimized for game engine, no text, no logos, no brand names
 ```
 
-### Empleados
+### Vitrina
 
 ```text
-portrait of a luxury watchmaker employee, elegant 2D game character portrait, premium boutique style, neutral background, no text, no watermark
+luxury watch display case, elegant 3D game asset, glass and dark metal, subtle gold accents, premium boutique style, PBR materials, optimized for game engine, no text, no logos, no brand names
 ```

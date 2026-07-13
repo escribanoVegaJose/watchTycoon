@@ -1,6 +1,6 @@
 # Watchmaker Tycoon
 
-Juego 2D de gestion donde el jugador construye una marca de relojeria de lujo desde un taller pequeno hasta una maison internacional.
+Juego de gestion donde el jugador construye una marca de relojeria de lujo desde un taller pequeno hasta una maison internacional.
 
 ## Vision
 
@@ -20,21 +20,19 @@ El jugador no solo fabrica relojes: construye deseo, reputacion y una marca prem
 
 Lujo, artesania, precision, marca, reputacion y deseo.
 
-## MVP Inicial
+## Alcance Inicial
 
-- 1 taller.
-- 10 piezas.
-- 4 materiales.
-- 3 empleados.
-- 5 pedidos.
-- 1 reputacion global.
-- 1 boton pasar dia.
-- 1 sistema de produccion.
-- 1 sistema de entrega de pedidos.
+- Taller o joyeria inicial como espacio principal.
+- Catalogo inicial reducido de piezas, materiales y relojes.
+- Primeros empleados o ayudantes.
+- Primeros pedidos o ventas simples.
+- Reputacion global.
+- Control de avance temporal.
+- Sistema de produccion o reventa inicial.
+- Sistema de entrega de pedidos o venta en vitrina.
 
-## Fuera Del MVP
+## Fuera Del Alcance Inicial
 
-- 3D.
 - Marcas reales.
 - Subastas complejas.
 - Arbol tecnologico grande.

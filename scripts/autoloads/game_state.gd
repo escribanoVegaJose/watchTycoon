@@ -2,9 +2,12 @@ extends Node
 
 const STARTING_MONEY := 5000
 const STARTING_REPUTATION := 0
+const MAIN_DOOR_PRICE := 850
 
 var money := STARTING_MONEY
 var reputation := STARTING_REPUTATION
+var has_main_door := false
+var hidden_built_elements: Dictionary = {}
 var owned_pieces: Array[Dictionary] = []
 var listed_pieces: Array[Dictionary] = []
 
@@ -13,6 +16,21 @@ func _ready() -> void:
 
 func can_afford(amount: int) -> bool:
 	return money >= amount
+
+func buy_main_door() -> bool:
+	if has_main_door or not can_afford(MAIN_DOOR_PRICE):
+		return false
+	money -= MAIN_DOOR_PRICE
+	has_main_door = true
+	hidden_built_elements["main_door"] = false
+	_emit_stats()
+	return true
+
+func is_built_element_hidden(element_id: String) -> bool:
+	return bool(hidden_built_elements.get(element_id, false))
+
+func set_built_element_hidden(element_id: String, hidden: bool) -> void:
+	hidden_built_elements[element_id] = hidden
 
 func buy_piece_from_virtual_auction(piece: Dictionary) -> bool:
 	var price: int = piece.get("auction_price", 0)

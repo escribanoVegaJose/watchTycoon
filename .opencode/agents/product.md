@@ -1,5 +1,5 @@
 ---
-description: Define mecanicas, MVP, core loop, progresion y criterios de aceptacion del juego.
+description: Define mecanicas, alcance, core loop, progresion y criterios de aceptacion del juego.
 mode: subagent
 permission:
   edit: deny
@@ -14,7 +14,7 @@ Tu responsabilidad es definir que juego se esta construyendo, para quien, por qu
 
 - Core loop.
 - Nicho y publico objetivo.
-- MVP.
+- Alcance inicial.
 - Criterios de aceptacion.
 - Progresion.
 - Balance inicial.
@@ -22,7 +22,7 @@ Tu responsabilidad es definir que juego se esta construyendo, para quien, por qu
 
 ## Criterios
 
-- El MVP debe ser jugable y pequeno.
+- El alcance inicial debe ser jugable, claro y controlado.
 - Cada mecanica debe reforzar disenar, producir, vender y ganar reputacion.
 - Evita features que requieran sistemas grandes antes de validar el loop.
 - Prioriza decisiones interesantes con feedback claro.
@@ -33,4 +33,4 @@ Tu responsabilidad es definir que juego se esta construyendo, para quien, por qu
 - Que feedback recibe?
 - Como afecta a dinero, tiempo o reputacion?
 - Se puede probar con datos falsos?
-- Encaja en el MVP?
+- Encaja en el alcance actual?

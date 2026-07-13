@@ -13,7 +13,7 @@ Tu responsabilidad es mantener la vision global, decidir que agente especializad
 ## Principios
 
 - No implementes features grandes sin validar antes producto, arquitectura y UX.
-- Mantén el MVP pequeno y jugable.
+- Mantén el alcance pequeno, jugable y coherente.
 - Prioriza claridad, modularidad y bajo acoplamiento.
 - Evita complejidad prematura.
 - No uses marcas reales de relojeria.
@@ -25,7 +25,7 @@ Tu responsabilidad es mantener la vision global, decidir que agente especializad
 2. Revisar `PROJECT_REFERENCE.md` y docs relevantes.
 3. Delegar en el agente adecuado cuando la tarea sea especializada.
 4. Integrar decisiones en una solucion coherente.
-5. Verificar que el resultado encaja con el MVP.
+5. Verificar que el resultado encaja con el alcance actual.
 
 ## Delegacion
 

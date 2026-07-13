@@ -1,68 +1,255 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://dpu5p0ddmu2yg"]
 
-[ext_resource type="Texture2D" path="res://assets/backgrounds/joyeria_base.png" id="1_background"]
-[ext_resource type="Script" path="res://scripts/ui/workshop_ui.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bovexu8kw0poa" path="res://scripts/ui/workshop_ui.gd" id="1_main_script"]
+[ext_resource type="Script" uid="uid://dyebajrau3686" path="res://scripts/camera/tycoon_camera_3d.gd" id="2_camera_script"]
+[ext_resource type="Script" uid="uid://cdtdefbvlv4xc" path="res://scripts/gameplay/wall_visibility_controller.gd" id="3_wall_visibility"]
+[ext_resource type="Texture2D" uid="uid://cn0w6y4c76pox" path="res://assets/textures/floor_parquet.png" id="4_floor_parquet"]
+[ext_resource type="Script" uid="uid://b7nplu8vrqsum" path="res://scripts/gameplay/sun_light_test.gd" id="5_sun_light_test"]
+[ext_resource type="PackedScene" uid="uid://dxgyr0kh8lxjp" path="res://assets/meshy/raw/Meshy_AI_A_luxury_jewelry_stor_0713145533_texture.glb" id="6_entrance_door"]
 
-[node name="Main" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("2_script")
+[sub_resource type="BoxMesh" id="FloorMesh"]
+size = Vector3(18, 0.22, 13)
 
-[node name="Background" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("1_background")
-expand_mode = 1
-stretch_mode = 6
+[sub_resource type="StandardMaterial3D" id="MatFloor"]
+albedo_color = Color(0.78, 0.72, 0.62, 1)
+albedo_texture = ExtResource("4_floor_parquet")
+roughness = 0.38
+uv1_scale = Vector3(7.4, 6, 1)
 
-[node name="AtmosphereOverlay" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.0352941, 0.0313726, 0.027451, 0.12)
+[sub_resource type="BoxMesh" id="BackWallMesh"]
+size = Vector3(18, 4.2, 0.32)
 
-[node name="HudLayer" type="CanvasLayer" parent="."]
+[sub_resource type="BoxMesh" id="BackWallGlassSideMesh"]
+size = Vector3(8.625, 4.2, 0.32)
 
-[node name="SafeArea" type="MarginContainer" parent="HudLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 36
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 36
-theme_override_constants/margin_bottom = 28
+[sub_resource type="BoxMesh" id="BackWallGlassBottomMesh"]
+size = Vector3(0.75, 0.42, 0.32)
 
-[node name="TopBar" type="HBoxContainer" parent="HudLayer/SafeArea"]
-layout_mode = 2
-alignment = 2
+[sub_resource type="BoxMesh" id="BackWallGlassTopMesh"]
+size = Vector3(0.75, 1.68, 0.32)
 
-[node name="MoneyPanel" type="PanelContainer" parent="HudLayer/SafeArea/TopBar"]
-layout_mode = 2
-custom_minimum_size = Vector2(190, 58)
+[sub_resource type="StandardMaterial3D" id="MatWall"]
+albedo_color = Color(0.055, 0.048, 0.042, 1)
+roughness = 0.72
 
-[node name="MoneyMargin" type="MarginContainer" parent="HudLayer/SafeArea/TopBar/MoneyPanel"]
+[sub_resource type="BoxMesh" id="SideWallMesh"]
+size = Vector3(0.32, 4.2, 13)
+
+[sub_resource type="Environment" id="StoreEnvironment"]
+background_mode = 1
+background_color = Color(0.018, 0.017, 0.016, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.72, 0.62, 0.5, 1)
+ambient_light_energy = 0.24
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.18
+
+[sub_resource type="StyleBoxFlat" id="PanelDark"]
+bg_color = Color(0.0431373, 0.0666667, 0.0705882, 0.82)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="ButtonLight"]
+bg_color = Color(0.92549, 0.901961, 0.85098, 0.96)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="PanelCream"]
+bg_color = Color(0.827451, 0.772549, 0.654902, 0.92)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="Main" type="Node3D" unique_id=2055157705]
+script = ExtResource("1_main_script")
+
+[node name="Architecture" type="Node3D" parent="." unique_id=1586308290]
+
+[node name="Floor" type="MeshInstance3D" parent="Architecture" unique_id=523336509]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+mesh = SubResource("FloorMesh")
+surface_material_override/0 = SubResource("MatFloor")
+
+[node name="BackWall" type="Node3D" parent="Architecture" unique_id=238690930]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6.5)
+
+[node name="BackWallLeft" type="MeshInstance3D" parent="Architecture/BackWall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6875, 2.1, 0)
+mesh = SubResource("BackWallGlassSideMesh")
+surface_material_override/0 = SubResource("MatWall")
+
+[node name="BackWallRight" type="MeshInstance3D" parent="Architecture/BackWall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6875, 2.1, 0)
+mesh = SubResource("BackWallGlassSideMesh")
+surface_material_override/0 = SubResource("MatWall")
+
+[node name="BackWallGlassBottom" type="MeshInstance3D" parent="Architecture/BackWall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
+mesh = SubResource("BackWallGlassBottomMesh")
+surface_material_override/0 = SubResource("MatWall")
+
+[node name="BackWallGlassTop" type="MeshInstance3D" parent="Architecture/BackWall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.36, 0)
+mesh = SubResource("BackWallGlassTopMesh")
+surface_material_override/0 = SubResource("MatWall")
+
+[node name="EntranceDoor" parent="Architecture" instance=ExtResource("6_entrance_door")]
+transform = Transform3D(1.55, 0, 0, 0, 1.55, 0, 0, 0, 1.55, 0, 1.47, -6.16)
+
+[node name="LeftWall" type="MeshInstance3D" parent="Architecture" unique_id=551885232]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.1, 0)
+mesh = SubResource("SideWallMesh")
+surface_material_override/0 = SubResource("MatWall")
+
+[node name="RightWall" type="MeshInstance3D" parent="Architecture" unique_id=509223754]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.1, 0)
+mesh = SubResource("SideWallMesh")
+surface_material_override/0 = SubResource("MatWall")
+
+[node name="FrontWall" type="MeshInstance3D" parent="Architecture" unique_id=1271212284]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 6.5)
+mesh = SubResource("BackWallMesh")
+surface_material_override/0 = SubResource("MatWall")
+
+[node name="CeilingShadowBlocker" type="MeshInstance3D" parent="Architecture" unique_id=809776829]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.31, 0)
+cast_shadow = 3
+mesh = SubResource("FloorMesh")
+surface_material_override/0 = SubResource("MatWall")
+
+[node name="WallVisibilityController" type="Node" parent="Architecture" unique_id=1836377599]
+script = ExtResource("3_wall_visibility")
+camera_path = NodePath("../../CameraRig/YawPivot/PitchPivot/Camera3D")
+front_wall_path = NodePath("../FrontWall")
+back_wall_path = NodePath("../BackWall")
+left_wall_path = NodePath("../LeftWall")
+right_wall_path = NodePath("../RightWall")
+
+[node name="Lighting" type="Node3D" parent="." unique_id=1163511598]
+
+[node name="StreetWindowLight" type="DirectionalLight3D" parent="Lighting" unique_id=1691916014]
+transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 0, 7, 4)
+light_color = Color(0.72, 0.82, 1, 1)
+light_energy = 0.75
+shadow_enabled = true
+script = ExtResource("5_sun_light_test")
+cycle_duration_seconds = 10.0
+
+[node name="InteriorLampLight" type="OmniLight3D" parent="Lighting"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 3.6
+omni_range = 13.0
+omni_attenuation = 0.65
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Lighting" unique_id=528656849]
+environment = SubResource("StoreEnvironment")
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=144555069]
+script = ExtResource("2_camera_script")
+
+[node name="YawPivot" type="Node3D" parent="CameraRig" unique_id=1874667569]
+
+[node name="PitchPivot" type="Node3D" parent="CameraRig/YawPivot" unique_id=1523603735]
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig/YawPivot/PitchPivot" unique_id=968792135]
+current = true
+fov = 55.0
+
+[node name="HudLayer" type="CanvasLayer" parent="." unique_id=2017863654]
+
+[node name="BottomNav" type="PanelContainer" parent="HudLayer" unique_id=266331312]
+offset_top = 676.0
+offset_right = 1280.0
+offset_bottom = 720.0
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="BottomNavMargin" type="MarginContainer" parent="HudLayer/BottomNav" unique_id=435837156]
 layout_mode = 2
 theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 10
+theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_bottom = 6
 
-[node name="MoneyLabel" type="Label" parent="HudLayer/SafeArea/TopBar/MoneyPanel/MoneyMargin"]
+[node name="BottomNavRow" type="HBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin" unique_id=1296372924]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MoneyPanel" type="PanelContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow" unique_id=1037795231]
+custom_minimum_size = Vector2(150, 32)
+layout_mode = 2
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="MoneyMargin" type="MarginContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/MoneyPanel" unique_id=1013674677]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 4
+
+[node name="MoneyLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/MoneyPanel/MoneyMargin" unique_id=938149827]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 1)
+theme_override_font_sizes/font_size = 18
 text = "5.000 €"
 horizontal_alignment = 1
 vertical_alignment = 1
-theme_override_font_sizes/font_size = 28
+
+[node name="ConstructionButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow" unique_id=1192532949]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(132, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("ButtonLight")
+text = "Construction"
+
+[node name="HintLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow" unique_id=875355709]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 0.82)
+theme_override_font_sizes/font_size = 15
+text = "WASD mover · Click derecho rotar · Rueda zoom"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ConstructionPanel" type="PanelContainer" parent="HudLayer" unique_id=1748220881]
+unique_name_in_owner = true
+visible = false
+offset_left = 86.0
+offset_top = 470.0
+offset_right = 560.0
+offset_bottom = 650.0
+theme_override_styles/panel = SubResource("PanelCream")
+
+[node name="ConstructionMargin" type="MarginContainer" parent="HudLayer/ConstructionPanel" unique_id=327548419]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="ConstructionColumn" type="VBoxContainer" parent="HudLayer/ConstructionPanel/ConstructionMargin" unique_id=467605761]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ConstructionTitle" type="Label" parent="HudLayer/ConstructionPanel/ConstructionMargin/ConstructionColumn" unique_id=999569464]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_font_sizes/font_size = 22
+text = "Construccion 3D"
+
+[node name="ConstructionDescription" type="Label" parent="HudLayer/ConstructionPanel/ConstructionMargin/ConstructionColumn" unique_id=1851085220]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_font_sizes/font_size = 16
+text = "Base inicial: suelo y paredes con cubos. Sin muebles ni recursos externos por ahora."
+autowrap_mode = 3
