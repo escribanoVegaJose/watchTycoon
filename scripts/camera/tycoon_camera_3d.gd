@@ -16,11 +16,13 @@ extends Node3D
 @onready var camera: Camera3D = $YawPivot/PitchPivot/Camera3D
 
 var rotating := false
+var placement_active := false
 
 func _ready() -> void:
 	camera.position.z = 14.0
 	pitch_pivot.rotation.x = deg_to_rad(-48.0)
 	yaw_pivot.rotation.y = deg_to_rad(45.0)
+	EventBus.placement_state_changed.connect(_on_placement_state_changed)
 
 func _process(delta: float) -> void:
 	var input := Vector3.ZERO
@@ -53,6 +55,8 @@ func _process(delta: float) -> void:
 	global_position.z = clamp(global_position.z, bounds_min.y, bounds_max.y)
 
 func _input(event: InputEvent) -> void:
+	if placement_active:
+		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			rotating = event.pressed
@@ -65,3 +69,8 @@ func _input(event: InputEvent) -> void:
 		yaw_pivot.rotation.y -= event.relative.x * rotate_speed
 		pitch_pivot.rotation.x -= event.relative.y * rotate_speed
 		pitch_pivot.rotation.x = clamp(pitch_pivot.rotation.x, min_pitch, max_pitch)
+
+func _on_placement_state_changed(active: bool, _item_name: String) -> void:
+	placement_active = active
+	if active:
+		rotating = false

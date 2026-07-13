@@ -5,7 +5,15 @@
 [ext_resource type="Script" uid="uid://cdtdefbvlv4xc" path="res://scripts/gameplay/wall_visibility_controller.gd" id="3_wall_visibility"]
 [ext_resource type="Texture2D" uid="uid://cn0w6y4c76pox" path="res://assets/textures/floor_parquet.png" id="4_floor_parquet"]
 [ext_resource type="Script" uid="uid://b7nplu8vrqsum" path="res://scripts/gameplay/sun_light_test.gd" id="5_sun_light_test"]
-[ext_resource type="PackedScene" uid="uid://dxgyr0kh8lxjp" path="res://assets/meshy/raw/Meshy_AI_A_luxury_jewelry_stor_0713145533_texture.glb" id="6_entrance_door"]
+[ext_resource type="PackedScene" path="res://assets/meshy/raw/Meshy_AI_A_luxury_jewelry_stor_0713145533_texture.glb" id="6_entrance_door"]
+[ext_resource type="Script" uid="uid://bna21svar0x0c" path="res://scripts/gameplay/construction_slot.gd" id="9_construction_slot"]
+[ext_resource type="Shader" path="res://scenes/main/wall_plaster.gdshader" id="10_wall_plaster"]
+[ext_resource type="Script" path="res://scripts/gameplay/sunlit_glass_panel.gd" id="11_sunlit_glass"]
+[ext_resource type="Texture2D" path="res://assets/icons/furniture_armchair.svg" id="12_furniture_icon"]
+[ext_resource type="Texture2D" path="res://assets/icons/window.svg" id="13_window_icon"]
+[ext_resource type="Resource" path="res://data/furniture/window_wood_01.tres" id="14_window_definition"]
+[ext_resource type="Script" path="res://scripts/gameplay/placement_wall.gd" id="15_placement_wall"]
+[ext_resource type="Script" path="res://scripts/gameplay/facade_placement_controller.gd" id="16_placement_controller"]
 
 [sub_resource type="BoxMesh" id="FloorMesh"]
 size = Vector3(18, 0.22, 13)
@@ -19,28 +27,31 @@ uv1_scale = Vector3(7.4, 6, 1)
 [sub_resource type="BoxMesh" id="BackWallMesh"]
 size = Vector3(18, 4.2, 0.32)
 
-[sub_resource type="BoxMesh" id="BackWallGlassSideMesh"]
-size = Vector3(8.625, 4.2, 0.32)
+[sub_resource type="BoxMesh" id="BackWallSegmentMesh"]
+size = Vector3(7.5, 4.2, 0.32)
 
-[sub_resource type="BoxMesh" id="BackWallGlassBottomMesh"]
-size = Vector3(0.75, 0.42, 0.32)
-
-[sub_resource type="BoxMesh" id="BackWallGlassTopMesh"]
-size = Vector3(0.75, 1.68, 0.32)
-
-[sub_resource type="StandardMaterial3D" id="MatWall"]
-albedo_color = Color(0.055, 0.048, 0.042, 1)
-roughness = 0.72
+[sub_resource type="ShaderMaterial" id="MatWall"]
+shader = ExtResource("10_wall_plaster")
 
 [sub_resource type="BoxMesh" id="SideWallMesh"]
 size = Vector3(0.32, 4.2, 13)
+
+[sub_resource type="BoxShape3D" id="BackWallPlacementShape"]
+size = Vector3(18, 4.2, 0.32)
+
+[sub_resource type="BoxShape3D" id="SideWallPlacementShape"]
+size = Vector3(0.32, 4.2, 13)
+
+[sub_resource type="StandardMaterial3D" id="MatCeiling"]
+albedo_color = Color(0.055, 0.048, 0.042, 1)
+roughness = 0.72
 
 [sub_resource type="Environment" id="StoreEnvironment"]
 background_mode = 1
 background_color = Color(0.018, 0.017, 0.016, 1)
 ambient_light_source = 3
 ambient_light_color = Color(0.72, 0.62, 0.5, 1)
-ambient_light_energy = 0.24
+ambient_light_energy = 0.4
 tonemap_mode = 2
 glow_enabled = true
 glow_intensity = 0.18
@@ -77,29 +88,21 @@ mesh = SubResource("FloorMesh")
 surface_material_override/0 = SubResource("MatFloor")
 
 [node name="BackWall" type="Node3D" parent="Architecture" unique_id=238690930]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, -6.5)
 
-[node name="BackWallLeft" type="MeshInstance3D" parent="Architecture/BackWall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6875, 2.1, 0)
-mesh = SubResource("BackWallGlassSideMesh")
+[node name="LeftSegment" type="MeshInstance3D" parent="Architecture/BackWall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.25, 0, 0)
+mesh = SubResource("BackWallSegmentMesh")
 surface_material_override/0 = SubResource("MatWall")
 
-[node name="BackWallRight" type="MeshInstance3D" parent="Architecture/BackWall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6875, 2.1, 0)
-mesh = SubResource("BackWallGlassSideMesh")
+[node name="RightSegment" type="MeshInstance3D" parent="Architecture/BackWall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 0, 0)
+mesh = SubResource("BackWallSegmentMesh")
 surface_material_override/0 = SubResource("MatWall")
 
-[node name="BackWallGlassBottom" type="MeshInstance3D" parent="Architecture/BackWall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
-mesh = SubResource("BackWallGlassBottomMesh")
-surface_material_override/0 = SubResource("MatWall")
+[node name="FacadeSlots" type="Node3D" parent="Architecture" unique_id=2044082106]
 
-[node name="BackWallGlassTop" type="MeshInstance3D" parent="Architecture/BackWall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.36, 0)
-mesh = SubResource("BackWallGlassTopMesh")
-surface_material_override/0 = SubResource("MatWall")
-
-[node name="EntranceDoor" parent="Architecture" instance=ExtResource("6_entrance_door")]
+[node name="EntranceDoor" parent="Architecture/FacadeSlots" instance=ExtResource("6_entrance_door")]
 transform = Transform3D(1.55, 0, 0, 0, 1.55, 0, 0, 0, 1.55, 0, 1.47, -6.16)
 
 [node name="LeftWall" type="MeshInstance3D" parent="Architecture" unique_id=551885232]
@@ -117,11 +120,84 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 6.5)
 mesh = SubResource("BackWallMesh")
 surface_material_override/0 = SubResource("MatWall")
 
+[node name="PlacementWalls" type="Node3D" parent="Architecture"]
+
+[node name="BackWallLeftPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, -6.5)
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("15_placement_wall")
+wall_id = "back"
+interior_normal = Vector3(0, 0, 1)
+local_horizontal_axis = Vector3(1, 0, 0)
+usable_half_width = 3.6
+local_horizontal_center = -5.25
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/BackWallLeftPlacement"]
+transform = Transform3D(0.416667, 0, 0, 0, 1, 0, 0, 0, 1, -5.25, 0, 0)
+shape = SubResource("BackWallPlacementShape")
+
+[node name="BackWallRightPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, -6.5)
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("15_placement_wall")
+wall_id = "back"
+interior_normal = Vector3(0, 0, 1)
+local_horizontal_axis = Vector3(1, 0, 0)
+usable_half_width = 3.6
+local_horizontal_center = 5.25
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/BackWallRightPlacement"]
+transform = Transform3D(0.416667, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 0, 0)
+shape = SubResource("BackWallPlacementShape")
+
+[node name="FrontWallPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 6.5)
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("15_placement_wall")
+wall_id = "front"
+interior_normal = Vector3(0, 0, -1)
+local_horizontal_axis = Vector3(1, 0, 0)
+usable_half_width = 8.7
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/FrontWallPlacement"]
+shape = SubResource("BackWallPlacementShape")
+
+[node name="LeftWallPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.1, 0)
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("15_placement_wall")
+wall_id = "left"
+interior_normal = Vector3(1, 0, 0)
+local_horizontal_axis = Vector3(0, 0, 1)
+usable_half_width = 6.2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/LeftWallPlacement"]
+shape = SubResource("SideWallPlacementShape")
+
+[node name="RightWallPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.1, 0)
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("15_placement_wall")
+wall_id = "right"
+interior_normal = Vector3(-1, 0, 0)
+local_horizontal_axis = Vector3(0, 0, 1)
+usable_half_width = 6.2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/RightWallPlacement"]
+shape = SubResource("SideWallPlacementShape")
+
+[node name="PlacedFacadeItems" type="Node3D" parent="Architecture"]
+
 [node name="CeilingShadowBlocker" type="MeshInstance3D" parent="Architecture" unique_id=809776829]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.31, 0)
 cast_shadow = 3
 mesh = SubResource("FloorMesh")
-surface_material_override/0 = SubResource("MatWall")
+surface_material_override/0 = SubResource("MatCeiling")
 
 [node name="WallVisibilityController" type="Node" parent="Architecture" unique_id=1836377599]
 script = ExtResource("3_wall_visibility")
@@ -139,11 +215,14 @@ light_color = Color(0.72, 0.82, 1, 1)
 light_energy = 0.75
 shadow_enabled = true
 script = ExtResource("5_sun_light_test")
-cycle_duration_seconds = 10.0
+day_duration_seconds = 60.0
+night_duration_seconds = 60.0
+minimum_elevation_degrees = 12.0
+maximum_elevation_degrees = 30.0
 
-[node name="InteriorLampLight" type="OmniLight3D" parent="Lighting"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
-light_color = Color(1, 0.86, 0.62, 1)
+[node name="WorkshopWarmLight" type="OmniLight3D" parent="Lighting"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6, 1.2)
+light_color = Color(1, 0.72, 0.46, 1)
 light_energy = 3.6
 omni_range = 13.0
 omni_attenuation = 0.65
@@ -163,7 +242,43 @@ script = ExtResource("2_camera_script")
 current = true
 fov = 55.0
 
+[node name="PlacementController" type="Node" parent="."]
+script = ExtResource("16_placement_controller")
+camera_path = NodePath("../CameraRig/YawPivot/PitchPivot/Camera3D")
+installation_container_path = NodePath("../Architecture/PlacedFacadeItems")
+window_definition = ExtResource("14_window_definition")
+placement_collision_mask = 2
+daylight_source_path = NodePath("../Lighting/StreetWindowLight")
+
 [node name="HudLayer" type="CanvasLayer" parent="." unique_id=2017863654]
+
+[node name="PlacementBar" type="PanelContainer" parent="HudLayer"]
+unique_name_in_owner = true
+visible = false
+offset_left = 290.0
+offset_top = 18.0
+offset_right = 990.0
+offset_bottom = 62.0
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="PlacementRow" type="HBoxContainer" parent="HudLayer/PlacementBar"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PlacementInstructionLabel" type="Label" parent="HudLayer/PlacementBar/PlacementRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CancelPlacementButton" type="Button" parent="HudLayer/PlacementBar/PlacementRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(105, 0)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ButtonLight")
+text = "Cancelar · Esc"
 
 [node name="BottomNav" type="PanelContainer" parent="HudLayer" unique_id=266331312]
 offset_top = 676.0
@@ -203,14 +318,14 @@ text = "5.000 €"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ConstructionButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow" unique_id=1192532949]
+[node name="FurnitureButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(132, 32)
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
-theme_override_font_sizes/font_size = 15
+tooltip_text = "Mobiliario y ventanas"
+icon = ExtResource("12_furniture_icon")
+expand_icon = true
 theme_override_styles/normal = SubResource("ButtonLight")
-text = "Construction"
 
 [node name="HintLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow" unique_id=875355709]
 layout_mode = 2
@@ -221,35 +336,209 @@ text = "WASD mover · Click derecho rotar · Rueda zoom"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="ConstructionPanel" type="PanelContainer" parent="HudLayer" unique_id=1748220881]
+[node name="FurniturePanel" type="PanelContainer" parent="HudLayer"]
 unique_name_in_owner = true
 visible = false
 offset_left = 86.0
-offset_top = 470.0
+offset_top = 350.0
 offset_right = 560.0
 offset_bottom = 650.0
 theme_override_styles/panel = SubResource("PanelCream")
 
-[node name="ConstructionMargin" type="MarginContainer" parent="HudLayer/ConstructionPanel" unique_id=327548419]
+[node name="FurnitureMargin" type="MarginContainer" parent="HudLayer/FurniturePanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 14
 
-[node name="ConstructionColumn" type="VBoxContainer" parent="HudLayer/ConstructionPanel/ConstructionMargin" unique_id=467605761]
+[node name="FurnitureColumn" type="VBoxContainer" parent="HudLayer/FurniturePanel/FurnitureMargin"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ConstructionTitle" type="Label" parent="HudLayer/ConstructionPanel/ConstructionMargin/ConstructionColumn" unique_id=999569464]
+[node name="FurnitureTitle" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
 theme_override_font_sizes/font_size = 22
-text = "Construccion 3D"
+text = "Mobiliario"
 
-[node name="ConstructionDescription" type="Label" parent="HudLayer/ConstructionPanel/ConstructionMargin/ConstructionColumn" unique_id=1851085220]
+[node name="WindowFilter" type="Button" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+disabled = true
+tooltip_text = "Filtro activo: Ventanas"
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_styles/disabled = SubResource("ButtonLight")
+icon = ExtResource("13_window_icon")
+expand_icon = true
+text = "Ventanas"
+
+[node name="WindowCard" type="VBoxContainer" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="WindowName" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn/WindowCard"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
-theme_override_font_sizes/font_size = 16
-text = "Base inicial: suelo y paredes con cubos. Sin muebles ni recursos externos por ahora."
+theme_override_font_sizes/font_size = 18
+text = "Ventana de madera y cristal"
+
+[node name="WindowDescription" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn/WindowCard"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+text = "Aporta luz natural con un acabado cálido de madera y cristal."
 autowrap_mode = 3
+
+[node name="WindowCompatibility" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn/WindowCard"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+text = "Compatible con: paredes interiores"
+
+[node name="BuyWindowButton" type="Button" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_styles/normal = SubResource("ButtonLight")
+theme_override_styles/disabled = SubResource("PanelDark")
+text = "Comprar y colocar · 650 €"
+
+[node name="FurnitureStatusLabel" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+text = "Selecciona una ventana para colocarla sobre una pared interior."
+autowrap_mode = 3
+
+[node name="WindowContextPanel" type="PanelContainer" parent="HudLayer"]
+unique_name_in_owner = true
+visible = false
+offset_left = 18.0
+offset_top = 92.0
+offset_right = 190.0
+offset_bottom = 184.0
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="Margin" type="MarginContainer" parent="HudLayer/WindowContextPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="Column" type="VBoxContainer" parent="HudLayer/WindowContextPanel/Margin"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="HudLayer/WindowContextPanel/Margin/Column"]
+layout_mode = 2
+text = "Ventana instalada"
+
+[node name="MoveWindowButton" type="Button" parent="HudLayer/WindowContextPanel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Mover"
+
+[node name="DemolishWindowButton" type="Button" parent="HudLayer/WindowContextPanel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Demoler"
+
+[node name="DemolitionConfirmPanel" type="PanelContainer" parent="HudLayer"]
+unique_name_in_owner = true
+visible = false
+offset_left = 202.0
+offset_top = 92.0
+offset_right = 450.0
+offset_bottom = 184.0
+theme_override_styles/panel = SubResource("PanelCream")
+
+[node name="Margin" type="MarginContainer" parent="HudLayer/DemolitionConfirmPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="Column" type="VBoxContainer" parent="HudLayer/DemolitionConfirmPanel/Margin"]
+layout_mode = 2
+
+[node name="Text" type="Label" parent="HudLayer/DemolitionConfirmPanel/Margin/Column"]
+layout_mode = 2
+text = "¿Demoler? Reembolso: 80 %"
+
+[node name="Actions" type="HBoxContainer" parent="HudLayer/DemolitionConfirmPanel/Margin/Column"]
+layout_mode = 2
+
+[node name="ConfirmDemolishButton" type="Button" parent="HudLayer/DemolitionConfirmPanel/Margin/Column/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Confirmar"
+
+[node name="CancelDemolishButton" type="Button" parent="HudLayer/DemolitionConfirmPanel/Margin/Column/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancelar"
+
+[node name="WallPalettePanel" type="PanelContainer" parent="HudLayer"]
+unique_name_in_owner = true
+visible = false
+offset_left = 18.0
+offset_top = 92.0
+offset_right = 340.0
+offset_bottom = 232.0
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="Margin" type="MarginContainer" parent="HudLayer/WallPalettePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="Column" type="VBoxContainer" parent="HudLayer/WallPalettePanel/Margin"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="HudLayer/WallPalettePanel/Margin/Column"]
+layout_mode = 2
+text = "Acabado de pared · gratuito"
+
+[node name="Finishes" type="HBoxContainer" parent="HudLayer/WallPalettePanel/Margin/Column"]
+layout_mode = 2
+
+[node name="Ivory" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+layout_mode = 2
+text = "Marfil"
+metadata/finish_id = "ivory"
+
+[node name="Graphite" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+layout_mode = 2
+text = "Grafito"
+metadata/finish_id = "graphite"
+
+[node name="DeepGreen" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+layout_mode = 2
+text = "Verde"
+metadata/finish_id = "deep_green"
+
+[node name="NightBlue" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+layout_mode = 2
+text = "Azul noche"
+metadata/finish_id = "night_blue"
+
+[node name="Steel" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+layout_mode = 2
+text = "Acero"
+metadata/finish_id = "steel"
+
+[node name="Actions" type="HBoxContainer" parent="HudLayer/WallPalettePanel/Margin/Column"]
+layout_mode = 2
+
+[node name="ApplyFinishButton" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Aplicar"
+
+[node name="CancelFinishButton" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancelar"

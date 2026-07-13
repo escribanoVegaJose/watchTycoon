@@ -6,6 +6,8 @@ extends Node
 @export var left_wall_path: NodePath
 @export var right_wall_path: NodePath
 @export var room_center := Vector3.ZERO
+## Mantiene la envolvente del taller intacta al navegar con la cámara.
+@export var keep_walls_visible := true
 
 @onready var camera: Camera3D = get_node(camera_path) as Camera3D
 @onready var front_wall: Node3D = get_node(front_wall_path) as Node3D
@@ -13,14 +15,17 @@ extends Node
 @onready var left_wall: Node3D = get_node(left_wall_path) as Node3D
 @onready var right_wall: Node3D = get_node(right_wall_path) as Node3D
 
+func _ready() -> void:
+	_set_all_walls_visible()
+	set_process(not keep_walls_visible)
+
 func _process(_delta: float) -> void:
 	_update_visible_walls()
 
 func _update_visible_walls() -> void:
-	front_wall.visible = true
-	back_wall.visible = true
-	left_wall.visible = true
-	right_wall.visible = true
+	_set_all_walls_visible()
+	if keep_walls_visible:
+		return
 
 	var camera_direction := camera.global_position - room_center
 	if absf(camera_direction.x) > absf(camera_direction.z):
@@ -33,3 +38,9 @@ func _update_visible_walls() -> void:
 			front_wall.visible = false
 		else:
 			back_wall.visible = false
+
+func _set_all_walls_visible() -> void:
+	front_wall.visible = true
+	back_wall.visible = true
+	left_wall.visible = true
+	right_wall.visible = true
