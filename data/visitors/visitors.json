@@ -1,0 +1,83 @@
+{
+  "visitors": [
+    {
+      "id": "practical_low",
+      "visual_id": "standard_customer",
+      "name": "Compradora de regalo",
+      "purchasing_power": "bajo",
+      "bargaining": "moderado",
+      "min_reputation": 0,
+      "min_rating_stars": 1,
+      "max_rating_stars": 3,
+      "min_budget": 140,
+      "max_budget": 280,
+      "patience": 4,
+      "spawn_weight": 5,
+      "preferred_segments": ["Funcional"],
+      "min_quality": 70,
+      "search_intentions": [
+        {"id": "daily_gift", "label": "Regalo práctico", "detail": "Busca una pieza funcional y fácil de llevar a diario."},
+        {"id": "classic_gift", "label": "Regalo clásico", "detail": "Prefiere un diseño sobrio para una ocasión especial."},
+        {"id": "celebration_gift", "label": "Detalle de celebración", "detail": "Quiere una pieza cuidada para marcar una fecha importante."}
+      ]
+    },
+    {
+      "id": "classic_medium",
+      "visual_id": "classic_customer",
+      "name": "Profesional aspiracional",
+      "purchasing_power": "medio",
+      "bargaining": "suave",
+      "min_reputation": 0,
+      "min_rating_stars": 2,
+      "max_rating_stars": 4,
+      "min_budget": 220,
+      "max_budget": 900,
+      "patience": 4,
+      "spawn_weight": 1,
+      "preferred_segments": ["Funcional", "Premium", "Clásico"],
+      "min_quality": 78
+    },
+    {
+      "id": "retired_careful_01",
+      "visual_id": "careful_retiree",
+      "name": "Jubilado cuidadoso",
+      "purchasing_power": "bajo",
+      "bargaining": "suave",
+      "min_reputation": 1,
+      "min_rating_stars": 1,
+      "max_rating_stars": 5,
+      "min_budget": 100,
+      "max_budget": 380,
+      "patience": 5,
+      "spawn_weight": 2,
+      "preferred_segments": ["Accesible", "Clásico accesible", "Clásico"],
+      "min_quality": 68,
+      "required_item_types": ["jewelry"],
+      "preferred_categories": ["pendant", "necklace", "earrings"],
+      "preferred_brands": ["Lumaire", "Cobrevia", "Valdora"],
+      "excluded_categories": ["digital"],
+      "excluded_tags": ["ostentatious"],
+      "search_intentions": [
+        {"id": "anniversary_keepsake", "label": "Recuerdo de aniversario", "detail": "Busca una joya serena para celebrar una vida compartida."},
+        {"id": "family_gift", "label": "Regalo para la familia", "detail": "Quiere una pieza discreta y duradera para entregar con cariño."},
+        {"id": "quiet_elegance", "label": "Elegancia tranquila", "detail": "Prefiere acabados clásicos, sin ostentación y fáciles de llevar."}
+      ]
+    },
+    {
+      "id": "premium_collector",
+      "visual_id": "classic_customer",
+      "name": "Coleccionista exigente",
+      "purchasing_power": "alto",
+      "bargaining": "agresivo",
+      "min_reputation": 12,
+      "min_rating_stars": 3,
+      "max_rating_stars": 5,
+      "min_budget": 2000,
+      "max_budget": 6500,
+      "patience": 3,
+      "spawn_weight": 1,
+      "preferred_segments": ["Premium"],
+      "min_quality": 90
+    }
+  ]
+}

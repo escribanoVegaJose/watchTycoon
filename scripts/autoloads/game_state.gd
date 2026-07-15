@@ -519,6 +519,7 @@ func award_auction_lot(lot: Dictionary, final_price: int) -> bool:
 		"lot_id": String(lot.get("lot_id", "")),
 		"item_type": String(lot.get("item_type", "watch")),
 		"category": String(lot.get("category", "")),
+		"tags": (lot.get("tags", []) as Array).duplicate(),
 		"name": String(lot.get("name", "Pieza de subasta")),
 		"detail": String(lot.get("detail", "Pieza adquirida en el Salón de Lotes")),
 		"model_path": String(lot.get("model_path", "")),
@@ -749,7 +750,7 @@ func complete_sale(listed_index: int) -> bool:
 	if displayed_index >= 0:
 		displayed_watches.remove_at(displayed_index)
 		displayed_watch = displayed_watches[0].duplicate(true) if not displayed_watches.is_empty() else {}
-		_update_history_status(unit_id, "Vendida por %s €" % int(piece.get("sale_price", 0)))
+		_update_history_sale(unit_id, int(piece.get("sale_price", 0)))
 		EventBus.watch_display_changed.emit(get_watch_display_snapshot())
 		EventBus.purchase_history_changed.emit()
 	money += int(piece.get("sale_price", 0))
@@ -774,7 +775,7 @@ func complete_visitor_sale(unit_id: String, final_price: int, reputation_gain: i
 	listed_pieces.remove_at(listed_index)
 	displayed_watches.remove_at(displayed_index)
 	displayed_watch = displayed_watches[0].duplicate(true) if not displayed_watches.is_empty() else {}
-	_update_history_status(unit_id, "Vendida por %s €" % final_price)
+	_update_history_sale(unit_id, final_price)
 	money += final_price
 	reputation += maxi(0, reputation_gain)
 	finance_period["sales"] = int(finance_period["sales"]) + final_price
@@ -857,17 +858,20 @@ func _sanitize_visitor_negotiation(raw: Variant) -> Dictionary:
 	return {
 		"profile_id": profile_id, "unit_id": unit_id,
 		"customer_name": _sanitize_customer_name(negotiation.get("customer_name", "")),
+		"search_intent": negotiation.get("search_intent", {}).duplicate(true) if negotiation.get("search_intent", {}) is Dictionary else {},
 		"state": String(negotiation.get("state", "waiting")),
 		"offer": _read_positive_int(negotiation.get("offer"), 1),
 		"budget": _read_positive_int(negotiation.get("budget"), 1),
 		"patience": clampi(_read_positive_int(negotiation.get("patience"), max_patience), 1, max_patience),
 		"max_patience": max_patience,
 		"turns": _read_non_negative_int(negotiation.get("turns"), 0),
+		"customer_slot": clampi(int(negotiation.get("customer_slot", -1)), -1, 1),
 	}
 
 func _sanitize_visitor_negotiations(raw: Variant) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var reserved_units: Dictionary = {}
+	var assigned_customer_slots: Dictionary = {}
 	if not raw is Array:
 		return result
 	for entry in raw:
@@ -875,7 +879,12 @@ func _sanitize_visitor_negotiations(raw: Variant) -> Array[Dictionary]:
 		var unit_id := String(negotiation.get("unit_id", ""))
 		if negotiation.is_empty() or reserved_units.has(unit_id):
 			continue
+		var customer_slot := int(negotiation.get("customer_slot", -1))
+		if customer_slot < 0 or assigned_customer_slots.has(customer_slot):
+			customer_slot = 0 if not assigned_customer_slots.has(0) else 1
+		negotiation["customer_slot"] = customer_slot
 		reserved_units[unit_id] = true
+		assigned_customer_slots[customer_slot] = true
 		result.append(negotiation)
 		if result.size() == 2:
 			break
@@ -1026,7 +1035,15 @@ func _sanitize_purchase_history(value: Variant) -> Array[Dictionary]:
 	if value is Array:
 		for entry in value:
 			if entry is Dictionary and not String(entry.get("unit_id", "")).is_empty():
-				result.append(entry.duplicate(true))
+				var clean: Dictionary = entry.duplicate(true)
+				# Older saves only stored the sale in the display string. Preserve that
+				# record and expose a structured final price for the history UI.
+				var status := String(clean.get("status", ""))
+				if status.begins_with("Vendida por ") and not clean.has("final_price"):
+					var legacy_price := status.trim_prefix("Vendida por ").trim_suffix(" €")
+					if legacy_price.is_valid_int():
+						clean["final_price"] = int(legacy_price)
+				result.append(clean)
 	return result
 
 func _sanitize_displayed_watch(value: Variant) -> Dictionary:
@@ -1118,6 +1135,14 @@ func _update_history_status(unit_id: String, status: String) -> void:
 	for index in range(purchase_history.size()):
 		if String(purchase_history[index].get("unit_id", "")) == unit_id:
 			purchase_history[index]["status"] = status
+			return
+
+func _update_history_sale(unit_id: String, final_price: int) -> void:
+	for index in range(purchase_history.size()):
+		if String(purchase_history[index].get("unit_id", "")) == unit_id:
+			purchase_history[index]["status"] = "Vendida"
+			purchase_history[index]["final_price"] = final_price
+			purchase_history[index]["sold_day"] = current_day
 			return
 
 func _sanitize_auction_list(value: Variant) -> Array[Dictionary]:

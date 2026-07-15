@@ -22,6 +22,8 @@ var _price_modal: Control
 var _price_input: LineEdit
 var _price_error: Label
 var _price_feedback: Label
+var _price_piece_name: Label
+var _price_reference: Label
 var _price_target: Dictionary = {}
 
 func _process(_delta: float) -> void:
@@ -45,6 +47,9 @@ func _ready() -> void:
 
 func open() -> void:
 	_store_scroll_position()
+	# Every opening starts at the beginning of the lot grid. Reusing an old
+	# offset hides card headers behind the modal header and looks like overlap.
+	_scroll_positions["auction"] = 0
 	_active_scroll = null
 	visible = true
 	_active_tab = "auction"
@@ -140,16 +145,16 @@ func _build_price_modal() -> void:
 	title.add_theme_font_size_override("font_size", 19)
 	title.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35))
 	column.add_child(title)
-	var piece_name := Label.new()
-	piece_name.name = "PieceName"
-	piece_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	piece_name.add_theme_font_size_override("font_size", 16)
-	column.add_child(piece_name)
-	var reference := Label.new()
-	reference.name = "Reference"
-	reference.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	reference.add_theme_color_override("font_color", Color(0.77, 0.75, 0.67))
-	column.add_child(reference)
+	_price_piece_name = Label.new()
+	_price_piece_name.name = "PieceName"
+	_price_piece_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_price_piece_name.add_theme_font_size_override("font_size", 16)
+	column.add_child(_price_piece_name)
+	_price_reference = Label.new()
+	_price_reference.name = "Reference"
+	_price_reference.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_price_reference.add_theme_color_override("font_color", Color(0.77, 0.75, 0.67))
+	column.add_child(_price_reference)
 	_price_input = LineEdit.new()
 	_price_input.placeholder_text = "Precio entero en €"
 	_price_input.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
@@ -185,10 +190,10 @@ func _open_price_modal(item: Dictionary) -> void:
 		_notify("La pieza está reservada hasta terminar la atención en caja.", "error")
 		return
 	_price_target = item.duplicate(true)
-	_price_modal.get_node("PanelContainer/MarginContainer/VBoxContainer/PieceName").text = String(item.get("name", "Pieza sin nombre"))
+	_price_piece_name.text = String(item.get("name", "Pieza sin nombre"))
 	var low := int(item.get("estimated_low", 0))
 	var high := int(item.get("estimated_high", 0))
-	_price_modal.get_node("PanelContainer/MarginContainer/VBoxContainer/Reference").text = "Referencia orientativa: %s–%s" % [_format_money(low), _format_money(high)] if low > 0 or high > 0 else "Sin rango de referencia disponible."
+	_price_reference.text = "Referencia orientativa: %s–%s" % [_format_money(low), _format_money(high)] if low > 0 or high > 0 else "Sin rango de referencia disponible."
 	_price_input.text = str(int(item.get("sale_price", item.get("suggested_price", item.get("auction_price", 0)))))
 	_price_error.text = ""
 	_price_modal.visible = true
@@ -266,7 +271,6 @@ func _render_auction() -> void:
 	_timer_label.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35))
 	_timer_label.add_theme_font_size_override("font_size", 16)
 	auction_meta.add_child(_timer_label)
-
 	var lot_scroll := ScrollContainer.new()
 	lot_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	lot_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -417,6 +421,11 @@ func _make_auction_card(snapshot: Dictionary) -> PanelContainer:
 	# Keep the bid control tooltip-free; its visible price already states the
 	# required minimum bid.
 	bid.tooltip_text = ""
+	# Match the native Button rect to the full visual CTA height. The grid may
+	# give cards additional vertical space, but it must never stretch the drawn
+	# CTA beyond this actual Godot input rect.
+	bid.custom_minimum_size = Vector2(0, 60)
+	bid.size_flags_vertical = Control.SIZE_SHRINK_END
 	bid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bid.pressed.connect(_place_bid.bind(String(snapshot.get("instance_id", ""))))
 	column.add_child(bid)
@@ -770,6 +779,9 @@ func _purchase_cost_for(item: Dictionary) -> int:
 
 func _make_valuation_label(valuation: Dictionary) -> VBoxContainer:
 	var summary := VBoxContainer.new()
+	# Grid rows use the height of their tallest card. Let this flexible section
+	# absorb any difference caused by wrapped copy, keeping all bid CTAs aligned.
+	summary.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	summary.add_theme_constant_override("separation", 3)
 	var movement_label := String(valuation.get("movement_label", "Mecanismo"))
 	var heading := Label.new()
@@ -906,7 +918,7 @@ func _refresh_auction_card(card: Dictionary, snapshot: Dictionary) -> void:
 	var bid := card["bid"] as Button
 	bid.text = "Pujar %s" % _format_money(minimum_bid) if phase == "active" else "Lote cerrado"
 	bid.disabled = phase != "active" or not GameState.carried_watch.is_empty() or not GameState.can_make_voluntary_payment(minimum_bid)
-	bid.tooltip_text = "Deposita primero la pieza que transportas en una vitrina." if not GameState.carried_watch.is_empty() else "Incremento mínimo: %s" % _format_money(int(snapshot.get("bid_increment", 0)))
+	bid.tooltip_text = ""
 
 func _on_auction_resolved(_result: Variant = null) -> void:
 	if _result is Dictionary:

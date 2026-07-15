@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/customer_visitor.gd" id="1_customer"]
 [ext_resource type="PackedScene" path="res://assets/characters/customer_idle.glb" id="2_idle"]
@@ -22,6 +22,11 @@
 [ext_resource type="PackedScene" path="res://assets/characters/demanding_collector_agree.glb" id="20_collector_agree"]
 [ext_resource type="PackedScene" path="res://assets/characters/demanding_collector_checkout.glb" id="21_collector_checkout"]
 [ext_resource type="PackedScene" path="res://assets/characters/demanding_collector_angry.glb" id="22_collector_angry"]
+[ext_resource type="PackedScene" path="res://assets/characters/careful_retiree_walk.glb" id="23_retiree_walk"]
+[ext_resource type="PackedScene" path="res://assets/characters/careful_retiree_agree.glb" id="24_retiree_agree"]
+[ext_resource type="PackedScene" path="res://assets/characters/careful_retiree_checkout.glb" id="25_retiree_checkout"]
+[ext_resource type="PackedScene" path="res://assets/characters/careful_retiree_angry.glb" id="26_retiree_angry"]
+[ext_resource type="PackedScene" path="res://assets/characters/careful_retiree_run.glb" id="27_retiree_run"]
 
 [sub_resource type="CapsuleShape3D" id="CharacterCapsule"]
 radius = 0.27
@@ -116,5 +121,25 @@ visible = false
 rotation = Vector3(0, 3.14159, 0)
 
 [node name="CollectorAngryVisual" parent="." instance=ExtResource("22_collector_angry")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CarefulRetireeWalkVisual" parent="." instance=ExtResource("23_retiree_walk")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CarefulRetireeAgreeVisual" parent="." instance=ExtResource("24_retiree_agree")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CarefulRetireeCheckoutVisual" parent="." instance=ExtResource("25_retiree_checkout")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CarefulRetireeAngryVisual" parent="." instance=ExtResource("26_retiree_angry")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CarefulRetireeRunVisual" parent="." instance=ExtResource("27_retiree_run")]
 visible = false
 rotation = Vector3(0, 3.14159, 0)

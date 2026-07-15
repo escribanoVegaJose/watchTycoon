@@ -48,6 +48,9 @@ const MOVE_ICON := preload("res://assets/icons/move.svg")
 @onready var cancel_restart_button: Button = %CancelRestartButton
 @onready var confirm_restart_button: Button = %ConfirmRestartButton
 @onready var language_option: OptionButton = %LanguageOption
+@onready var music_mute_button: Button = %MusicMuteButton
+@onready var music_volume_slider: HSlider = %MusicVolumeSlider
+@onready var effects_volume_slider: HSlider = %EffectsVolumeSlider
 @onready var customer_attention_card: PanelContainer = %CustomerAttentionCard
 @onready var customer_attention_header: Label = %CustomerAttentionHeader
 @onready var customer_attention_message: Label = %CustomerAttentionMessage
@@ -87,6 +90,7 @@ var _auction_win_queue: Array[Dictionary] = []
 var _auction_win_overflow := 0
 var _last_bottom_action_active := ""
 var _visitor_offer_card_height := 0.0
+var _door_admission_button: Button
 
 func _ready() -> void:
 	EventBus.stats_changed.connect(_on_stats_changed)
@@ -122,6 +126,10 @@ func _ready() -> void:
 	cancel_restart_button.pressed.connect(_on_cancel_restart_pressed)
 	confirm_restart_button.pressed.connect(_on_confirm_restart_pressed)
 	language_option.item_selected.connect(_on_language_selected)
+	music_mute_button.pressed.connect(_on_music_mute_pressed)
+	AudioManager.music_mute_changed.connect(_refresh_music_mute_button)
+	music_volume_slider.value_changed.connect(_on_music_volume_changed)
+	effects_volume_slider.value_changed.connect(_on_effects_volume_changed)
 	for customer_node in get_tree().get_nodes_in_group("world_selectable_customer"):
 		var customer := customer_node as CustomerVisitor
 		if customer != null:
@@ -145,8 +153,12 @@ func _ready() -> void:
 	_resize_customer_attention_card()
 	restart_confirmation.visible = false
 	_refresh_language_option()
+	_refresh_music_mute_button(SettingsManager.music_muted)
+	music_volume_slider.value = SettingsManager.music_volume
+	effects_volume_slider.value = SettingsManager.effects_volume
 	game_menu_overlay.add_to_group("game_menu_overlay")
 	_create_watch_context_panel()
+	_create_door_admission_button()
 	_refresh_bottom_action_style()
 	_populate_furniture_catalog()
 	_populate_facilities_catalog()
@@ -1195,6 +1207,39 @@ func _process(_delta: float) -> void:
 	if _selection_panel != null and _selection_panel.visible:
 		_position_selection_panel()
 	_refresh_bottom_action_style()
+	_refresh_door_admission_button()
+
+func _create_door_admission_button() -> void:
+	_door_admission_button = Button.new()
+	_door_admission_button.name = "DoorAdmissionButton"
+	_door_admission_button.visible = false
+	_door_admission_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_door_admission_button.add_theme_font_size_override("font_size", 13)
+	_door_admission_button.add_theme_stylebox_override("normal", _make_bottom_action_button_style(false))
+	_door_admission_button.pressed.connect(func() -> void: EventBus.visitor_door_open_requested.emit())
+	get_node("HudLayer").add_child(_door_admission_button)
+
+func _refresh_door_admission_button() -> void:
+	if _door_admission_button == null or selection_camera == null:
+		return
+	var waiting_count := 0
+	for negotiation in GameState.get_visitor_negotiations():
+		if String(negotiation.get("state", "")) == "waiting_outside":
+			waiting_count += 1
+	var counters := get_tree().get_nodes_in_group("point_of_sale_counter")
+	if waiting_count == 0 or counters.is_empty() or not counters[0] is Node3D:
+		_door_admission_button.visible = false
+		return
+	var counter := counters[0] as Node3D
+	var anchor := counter.global_position + Vector3.UP * 1.35
+	if selection_camera.is_position_behind(anchor):
+		_door_admission_button.visible = false
+		return
+	_door_admission_button.text = "Abrir puerta · %d" % waiting_count
+	_door_admission_button.size = Vector2(126, 32)
+	var screen_position := selection_camera.unproject_position(anchor)
+	_door_admission_button.position = screen_position - _door_admission_button.size * 0.5
+	_door_admission_button.visible = true
 
 func _refresh_bottom_action_style() -> void:
 	var active := "auction" if commerce_panel.visible else "inventory" if inventory_panel.visible else "menu" if game_menu_overlay.visible else ""
@@ -1326,6 +1371,19 @@ func _refresh_language_option() -> void:
 	language_option.add_item(tr("Inglés"))
 	language_option.set_item_metadata(1, "en")
 	language_option.select(0 if String(_settings_manager().get("locale")) == "es" else 1)
+
+func _on_music_mute_pressed() -> void:
+	AudioManager.toggle_music_mute()
+
+func _refresh_music_mute_button(is_muted: bool) -> void:
+	music_mute_button.text = tr("🔇 Música") if is_muted else tr("🔊 Música")
+	music_mute_button.tooltip_text = tr("Activar música") if is_muted else tr("Silenciar música")
+
+func _on_music_volume_changed(volume: float) -> void:
+	SettingsManager.set_music_volume(volume)
+
+func _on_effects_volume_changed(volume: float) -> void:
+	SettingsManager.set_effects_volume(volume)
 
 func _settings_manager() -> Node:
 	# Access through the scene tree so this UI remains valid while Godot refreshes

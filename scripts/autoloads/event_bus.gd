@@ -77,6 +77,10 @@ signal monthly_settlement_completed(settlement: Dictionary, resulting_balance: i
 signal visitor_negotiation_changed(snapshot: Dictionary)
 signal visitor_negotiation_action_requested(action: String, amount: int)
 signal visitor_negotiation_resolved(result: Dictionary)
+## El HUD solicita la admisión; VisitorNegotiationManager valida la visita exterior.
+signal visitor_door_open_requested
+## Presentación de audio, sin reglas de negocio ni referencias a la escena.
+signal visitor_doorbell_requested
 ## UI-only placement hint so the customer thought card can avoid this fixed offer.
 signal visitor_negotiation_card_visibility_changed(is_visible: bool, occupied_height: float)
 ## Customer satisfaction is independent from the progression reputation integer.

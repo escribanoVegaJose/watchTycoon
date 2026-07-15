@@ -26,6 +26,7 @@ func _ready() -> void:
 		get_node("../HudLayer").add_child(panel)
 	_negotiation_panel = get_node_or_null("../HudLayer/VisitorNegotiationPanel") as VisitorNegotiationPanel
 	EventBus.visitor_negotiation_action_requested.connect(_on_action_requested)
+	EventBus.visitor_door_open_requested.connect(admit_next_waiting_visitor)
 	EventBus.facility_installations_reloaded.connect(_resume_visits)
 	_next_practical_attempt = _practical_attempt_interval()
 	if not GameState.get_visitor_negotiations().is_empty():
@@ -37,45 +38,53 @@ func _try_start_pair() -> void:
 	if not GameState.can_access_commerce() or customers.is_empty() or not GameState.get_visitor_negotiations().is_empty() or not _departing_customer_ids.is_empty():
 		return
 	var negotiations: Array[Dictionary] = []
-	var practical_profile := DataRegistry.get_visitor_profile("practical_low")
-	var practical_candidate := _best_candidate_for_profile(practical_profile, "")
-	if practical_profile.is_empty() or practical_candidate.is_empty():
-		# No se puede valorar una boutique sin haberla visitado. El cliente entra,
-		# recorre la sala y sólo una futura salida evaluada podrá dejar reseña.
+	var selected_unit_ids: Dictionary = {}
+	var profile_ids := _profile_ids_for_rating()
+	profile_ids.shuffle()
+	for profile_id in profile_ids:
+		if negotiations.size() >= customers.size():
+			break
+		if profile_id == "premium_collector" and not _collector_window_is_open():
+			continue
+		var profile := DataRegistry.get_visitor_profile(profile_id)
+		var candidate := _best_candidate_for_profile(profile, "")
+		if candidate.is_empty() or selected_unit_ids.has(String(candidate.get("id", ""))):
+			continue
+		selected_unit_ids[String(candidate["id"])] = true
+		negotiations.append(_new_negotiation(profile_id, candidate, negotiations.size()))
+		if profile_id == "premium_collector":
+			GameState.last_collector_spawn_day = GameState.current_day
+	if negotiations.is_empty():
 		if not customers.is_empty() and not customers[0].is_leaving_store():
 			customers[0].begin_browse_visit()
 		EventBus.feedback_requested.emit("Un cliente ha entrado a explorar la boutique.", "info")
 		return
-	negotiations.append(_new_negotiation("practical_low", practical_candidate))
-	# La segunda plaza alterna entre el perfil medio y el coleccionista. El
-	# coleccionista sólo visita una vez cada tres días y nunca crea un tercer NPC.
-	if customers.size() > 1:
-		var secondary_profile_id := "premium_collector" if _collector_window_is_open() else "classic_medium"
-		var secondary_profile := DataRegistry.get_visitor_profile(secondary_profile_id)
-		var secondary_candidate := _best_candidate_for_profile(secondary_profile, String(practical_candidate["id"]))
-		# Una ventana premium sin reloj apto no debe vaciar la segunda plaza.
-		if secondary_profile_id == "premium_collector" and secondary_candidate.is_empty():
-			secondary_profile_id = "classic_medium"
-			secondary_profile = DataRegistry.get_visitor_profile(secondary_profile_id)
-			secondary_candidate = _best_candidate_for_profile(secondary_profile, String(practical_candidate["id"]))
-		if not secondary_profile.is_empty() and not secondary_candidate.is_empty():
-			negotiations.append(_new_negotiation(secondary_profile_id, secondary_candidate))
-			if secondary_profile_id == "premium_collector":
-				GameState.last_collector_spawn_day = GameState.current_day
 	GameState.set_visitor_negotiations(negotiations)
 	_start_physical_visits()
-	var second_is_collector := negotiations.size() > 1 and String(negotiations[1].get("profile_id", "")) == "premium_collector"
-	EventBus.feedback_requested.emit("Un coleccionista exigente ha entrado; espera turno en caja." if second_is_collector else "Dos clientes han entrado; el segundo espera turno en caja." if negotiations.size() > 1 else "Una compradora de regalo ha entrado en la boutique.", "info")
+	EventBus.visitor_doorbell_requested.emit()
+	EventBus.feedback_requested.emit("Ha sonado el timbre: abre la puerta desde el punto de venta." if negotiations.size() == 1 else "Han llegado dos clientes: abre la puerta desde el punto de venta.", "info")
 
-func _new_negotiation(profile_id: String, candidate: Dictionary) -> Dictionary:
+func _profile_ids_for_rating() -> Array[String]:
+	var rating := clampf(maxf(1.0, GameState.get_customer_rating()), 1.0, 5.0)
+	var result: Array[String] = []
+	for profile in DataRegistry.get_visitor_profiles():
+		if rating < float(profile.get("min_rating_stars", 1)) or rating > float(profile.get("max_rating_stars", 5)):
+			continue
+		for _weight in range(maxi(1, int(profile.get("spawn_weight", 1)))):
+			result.append(String(profile.get("id", "")))
+	return result
+
+func _new_negotiation(profile_id: String, candidate: Dictionary, customer_slot: int) -> Dictionary:
 	var profile := DataRegistry.get_visitor_profile(profile_id)
 	var price := int(candidate.get("sale_price", 0))
-	return {"profile_id": profile_id, "unit_id": String(candidate["id"]), "customer_name": GameState.generate_customer_name(), "state": "entering", "offer": mini(int(round(price * _initial_offer_ratio(profile))), int(profile.get("max_budget", price))), "patience": int(profile.get("patience", 3)), "max_patience": int(profile.get("patience", 3)), "budget": int(profile.get("max_budget", 0)), "turns": 0}
+	var intentions: Array = profile.get("search_intentions", [])
+	var intention: Dictionary = intentions.pick_random().duplicate(true) if not intentions.is_empty() else {}
+	return {"profile_id": profile_id, "unit_id": String(candidate["id"]), "customer_name": GameState.generate_customer_name(), "search_intent": intention, "state": "waiting_outside", "offer": mini(int(round(price * _initial_offer_ratio(profile))), int(profile.get("max_budget", price))), "patience": int(profile.get("patience", 3)), "max_patience": int(profile.get("patience", 3)), "budget": int(profile.get("max_budget", 0)), "turns": 0, "customer_slot": customer_slot}
 
 func customer_chose_piece(visitor_id: String) -> void:
 	var negotiations := GameState.get_visitor_negotiations()
 	for index in negotiations.size():
-		var customer := _customer_for_profile(String(negotiations[index].get("profile_id", "")))
+		var customer := _customer_for_negotiation(negotiations[index], index)
 		if customer != null and customer.visitor_instance_id == visitor_id:
 			negotiations[index]["state"] = "waiting"
 			GameState.set_visitor_negotiations(negotiations)
@@ -95,10 +104,30 @@ func _start_physical_visits() -> void:
 		var profile := DataRegistry.get_visitor_profile(String(negotiation.get("profile_id", "")))
 		var watch := _watch_for_unit(String(negotiation.get("unit_id", "")))
 		var display := GameState.get_displayed_watch(String(negotiation.get("unit_id", "")))
-		var customer := _customer_for_profile(String(negotiation.get("profile_id", "")))
+		var customer := _customer_for_negotiation(negotiation, index)
 		if customer == null or profile.is_empty() or watch.is_empty() or display.is_empty() or not customer.set_visitor_profile(profile):
 			continue
-		customer.begin_purchase_visit(display, String(watch.get("name", "Pieza expuesta")), index, String(negotiation.get("customer_name", "")))
+		if String(negotiation.get("state", "")) == "waiting_outside":
+			customer.begin_waiting_outside(index, String(negotiation.get("customer_name", "")))
+		else:
+			customer.begin_purchase_visit(display, String(watch.get("name", "Pieza expuesta")), index, String(negotiation.get("customer_name", "")))
+
+func admit_next_waiting_visitor() -> void:
+	var negotiations := GameState.get_visitor_negotiations()
+	for index in negotiations.size():
+		if String(negotiations[index].get("state", "")) != "waiting_outside":
+			continue
+		var customer := _customer_for_negotiation(negotiations[index], index)
+		var display := GameState.get_displayed_watch(String(negotiations[index].get("unit_id", "")))
+		var watch := _watch_for_unit(String(negotiations[index].get("unit_id", "")))
+		if customer == null or display.is_empty() or watch.is_empty():
+			return
+		negotiations[index]["state"] = "entering"
+		GameState.set_visitor_negotiations(negotiations)
+		customer.begin_purchase_visit(display, String(watch.get("name", "Pieza expuesta")), index, String(negotiations[index].get("customer_name", "")))
+		EventBus.feedback_requested.emit("Has abierto la puerta. El cliente entra en la boutique.", "info")
+		_publish_active()
+		return
 
 
 func _process(delta: float) -> void:
@@ -109,14 +138,14 @@ func _process(delta: float) -> void:
 	var negotiations := GameState.get_visitor_negotiations()
 	if negotiations.is_empty() or watchmaker == null:
 		return
-	var active_customer := _customer_for_profile(String(negotiations[0].get("profile_id", "")))
+	var active_customer := _customer_for_negotiation(negotiations[0], 0)
 	if active_customer != null and _arrived_at_counter.get(active_customer.visitor_instance_id, false) and active_customer.global_position.distance_to(watchmaker.global_position) <= 4.0:
 		_activate_first()
 
 func customer_waiting_for_attendance(visitor_id: String) -> void:
 	_arrived_at_counter[visitor_id] = true
 	var negotiations := GameState.get_visitor_negotiations()
-	var active_customer := _customer_for_profile(String(negotiations[0].get("profile_id", ""))) if not negotiations.is_empty() else null
+	var active_customer := _customer_for_negotiation(negotiations[0], 0) if not negotiations.is_empty() else null
 	if active_customer != null and active_customer.visitor_instance_id == visitor_id:
 		EventBus.feedback_requested.emit("Cliente en caja: acércate para atenderle.", "info")
 		# La llegada a caja es el hito definitivo de esta versión. Abrimos el
@@ -169,7 +198,7 @@ func _resolve_first(result: String, message: String) -> void:
 	var negotiations := GameState.get_visitor_negotiations()
 	if negotiations.is_empty(): return
 	_record_review(negotiations[0], result)
-	var customer := _customer_for_profile(String(negotiations[0].get("profile_id", "")))
+	var customer := _customer_for_negotiation(negotiations[0], 0)
 	negotiations.remove_at(0)
 	GameState.set_visitor_negotiations(negotiations)
 	if customer != null:
@@ -186,7 +215,7 @@ func _resolve_first(result: String, message: String) -> void:
 func _remove_visit_for_customer(visitor_id: String, result: String, message: String) -> void:
 	var negotiations := GameState.get_visitor_negotiations()
 	for index in negotiations.size():
-		var customer := _customer_for_profile(String(negotiations[index].get("profile_id", "")))
+		var customer := _customer_for_negotiation(negotiations[index], index)
 		if customer != null and customer.visitor_instance_id == visitor_id:
 			_record_review(negotiations[index], result)
 			negotiations.remove_at(index)
@@ -197,15 +226,21 @@ func _remove_visit_for_customer(visitor_id: String, result: String, message: Str
 			EventBus.visitor_negotiation_resolved.emit({"result": result, "message": message})
 			return
 
-func _customer_for_profile(profile_id: String) -> CustomerVisitor:
-	return customers[0] if profile_id == "practical_low" and not customers.is_empty() else customers[1] if customers.size() > 1 else null
+## El cuerpo es un recurso físico de la cola, no una propiedad del perfil. El
+## slot persistido evita que, al resolver el primero, el segundo cambie de cuerpo.
+## Las partidas previas no tenían customer_slot: se restauran por índice actual.
+func _customer_for_negotiation(negotiation: Dictionary, fallback_index: int) -> CustomerVisitor:
+	var customer_slot := int(negotiation.get("customer_slot", fallback_index))
+	if customer_slot < 0 or customer_slot >= customers.size():
+		return null
+	return customers[customer_slot]
 
 func _activate_first_if_arrived() -> void:
 	var negotiations := GameState.get_visitor_negotiations()
 	if negotiations.is_empty():
 		_publish_active()
 		return
-	var customer := _customer_for_profile(String(negotiations[0].get("profile_id", "")))
+	var customer := _customer_for_negotiation(negotiations[0], 0)
 	if customer != null and _arrived_at_counter.get(customer.visitor_instance_id, false):
 		_activate_first()
 	else:
@@ -219,8 +254,38 @@ func _best_candidate_for_profile(profile: Dictionary, excluded_unit_id: String) 
 		if String(watch.get("id", "")) == excluded_unit_id or GameState.get_displayed_watch(String(watch.get("id", ""))).is_empty(): continue
 		if int(watch.get("sale_price", 0)) < int(profile.get("min_budget", 0)) or int(watch.get("sale_price", 0)) > int(profile.get("max_budget", 0)) or int(watch.get("quality_score", 0)) < int(profile.get("min_quality", 0)): continue
 		if not (profile.get("preferred_segments", []) as Array).has(String(watch.get("segment", ""))): continue
-		if best.is_empty() or int(watch.get("quality_score", 0)) > int(best.get("quality_score", 0)): best = watch.duplicate(true)
+		if not _matches_profile_item_filters(watch, profile): continue
+		var quality := int(watch.get("quality_score", 0))
+		var best_quality := int(best.get("quality_score", 0))
+		if best.is_empty() or quality > best_quality or (quality == best_quality and _is_preferred_brand(watch, profile) and not _is_preferred_brand(best, profile)):
+			best = watch.duplicate(true)
 	return best
+
+## Filtros opcionales y data-driven. Los perfiles antiguos, que no los declaran,
+## conservan su comportamiento actual y sus partidas guardadas siguen siendo válidas.
+func _matches_profile_item_filters(item: Dictionary, profile: Dictionary) -> bool:
+	var item_types := profile.get("required_item_types", []) as Array
+	var categories := profile.get("preferred_categories", []) as Array
+	var excluded_categories := profile.get("excluded_categories", []) as Array
+	var required_tags := profile.get("required_tags", []) as Array
+	var excluded_tags := profile.get("excluded_tags", []) as Array
+	var item_tags := item.get("tags", []) as Array
+	if not item_types.is_empty() and not item_types.has(String(item.get("item_type", "watch"))):
+		return false
+	if not categories.is_empty() and not categories.has(String(item.get("category", ""))):
+		return false
+	if excluded_categories.has(String(item.get("category", ""))):
+		return false
+	for tag in required_tags:
+		if not item_tags.has(tag):
+			return false
+	for tag in excluded_tags:
+		if item_tags.has(tag):
+			return false
+	return true
+
+func _is_preferred_brand(item: Dictionary, profile: Dictionary) -> bool:
+	return (profile.get("preferred_brands", []) as Array).has(String(item.get("brand", "")))
 
 func _initial_offer_ratio(profile: Dictionary) -> float:
 	return 0.88 if String(profile.get("bargaining", "")) == "suave" else 0.80
@@ -233,7 +298,7 @@ func _reputation_gain(_watch: Dictionary, _profile: Dictionary) -> int:
 
 func _practical_attempt_interval() -> float:
 	var rating := GameState.get_customer_rating()
-	return 60.0 if rating < 2.5 else 30.0 if rating < 4.0 else 15.0
+	return 15.0 if rating < 2.5 else 30.0 if rating < 4.0 else 60.0
 
 func _collector_window_is_open() -> bool:
 	return GameState.current_day >= 3 and posmod(GameState.current_day, 3) == 0 and GameState.last_collector_spawn_day != GameState.current_day

@@ -3,13 +3,14 @@ extends CharacterBody3D
 
 ## Cliente ambiental: primera máquina de estados visual, sin ventas ni pedidos.
 ## Un único cuerpo cambia de set visual según el perfil que selecciona el manager.
-enum State { IDLE, ENTERING_STORE, DECIDING_PURCHASE, WALKING_TO_DISPLAY, VIEWING_DISPLAY, WALKING_TO_COUNTER, VIEWING_COUNTER, WALKING_TO_PURCHASE_DISPLAY, VIEWING_PURCHASE_DISPLAY, WALKING_TO_NEGOTIATION, WAITING_FOR_ATTENDANCE, BROWSING_EMPTY, WALKING_TO_EXIT_DOOR, LEAVING_STORE, REACTION }
+enum State { IDLE, WAITING_OUTSIDE, ENTERING_STORE, DECIDING_PURCHASE, WALKING_TO_DISPLAY, VIEWING_DISPLAY, WALKING_TO_COUNTER, VIEWING_COUNTER, WALKING_TO_PURCHASE_DISPLAY, VIEWING_PURCHASE_DISPLAY, WALKING_TO_NEGOTIATION, WAITING_FOR_ATTENDANCE, BROWSING_EMPTY, WALKING_TO_EXIT_DOOR, LEAVING_STORE, REACTION }
 
 const STANDARD_VISUAL_ID := "standard_customer"
 const CLASSIC_VISUAL_ID := "classic_customer"
 const GIFT_BUYER_VISUAL_ID := "gift_buyer"
 const ASPIRATIONAL_PROFESSIONAL_VISUAL_ID := "aspirational_professional"
 const DEMANDING_COLLECTOR_VISUAL_ID := "demanding_collector"
+const CAREFUL_RETIREE_VISUAL_ID := "careful_retiree"
 const WORLD_SOLID_MASK := 8
 const DETOUR_DISTANCE := 1.15
 const MAX_CONSECUTIVE_COLLISIONS := 6
@@ -31,7 +32,7 @@ signal attention_indicator_changed(is_visible: bool, message: String, bubble_sty
 @onready var walk_visual: Node3D = $WalkVisual
 @onready var classic_idle_visual: Node3D = $ClassicIdleVisual
 @onready var classic_walk_visual: Node3D = $ClassicWalkVisual
-# Preparados para futuros estados de gameplay; no añaden transiciones al MVP.
+# Preparados para futuros estados de gameplay; no añaden transiciones nuevas.
 @onready var classic_run_visual: Node3D = $ClassicRunVisual
 @onready var classic_inspect_visual: Node3D = $ClassicInspectVisual
 
@@ -203,7 +204,7 @@ func _move_to_destination(delta: float) -> void:
 	_set_walking(false)
 	_plan_detour(collision, direction)
 
-## Desvío local para el MVP: se apoya en el normal de la colisión y vuelve al
+## Desvío local: se apoya en el normal de la colisión y vuelve al
 ## waypoint original. Así los visitantes rodean muebles sin requerir NavMesh.
 func _plan_detour(collision: KinematicCollision3D, travel_direction: Vector3) -> void:
 	_consecutive_collisions += 1
@@ -295,6 +296,17 @@ func begin_purchase_visit(display_entry: Dictionary, watch_name: String, queue_p
 		set_attention_indicator(true, "Busco una pieza\ncon carácter.")
 		return true
 	return false
+
+func begin_waiting_outside(queue_position := 0, customer_name := "") -> void:
+	_is_browse_visit = false
+	_queue_position = queue_position
+	_customer_name = customer_name.strip_edges()
+	visible = true
+	global_position = exit_position + Vector3(float(queue_position) * 0.65, 0.0, -float(queue_position) * 0.45)
+	velocity = Vector3.ZERO
+	_state = State.WAITING_OUTSIDE
+	set_attention_indicator(true, "Esperando en\nla entrada")
+	_set_walking(false)
 
 func _start_pending_purchase_display() -> void:
 	if _is_browse_visit:
@@ -528,7 +540,10 @@ func _show_profile_visual(kind: String, loop: bool) -> void:
 		visual.visible = is_selected
 		var player := _find_animation_player(visual)
 		if is_selected:
-			_play_first_animation(player, loop)
+			if kind == "idle" and bool(nodes.get("idle_static", false)):
+				_show_first_animation_pose(player)
+			else:
+				_play_first_animation(player, loop)
 		else:
 			_stop_animation(player)
 
@@ -540,13 +555,16 @@ func _visual_nodes_for(visual_id: String) -> Dictionary:
 			return {"idle": "ProfessionalIdleVisual", "walk": "ProfessionalWalkVisual", "agree": "ProfessionalAgreeVisual", "checkout": "ProfessionalCheckoutVisual", "angry": "ProfessionalAngryVisual"}
 		DEMANDING_COLLECTOR_VISUAL_ID:
 			return {"idle": "CollectorIdleVisual", "walk": "CollectorWalkVisual", "agree": "CollectorAgreeVisual", "checkout": "CollectorCheckoutVisual", "angry": "CollectorAngryVisual"}
+		CAREFUL_RETIREE_VISUAL_ID:
+			# No hay GLB idle: parado conserva la pose inicial del GLB walk.
+			return {"idle": "CarefulRetireeWalkVisual", "walk": "CarefulRetireeWalkVisual", "agree": "CarefulRetireeAgreeVisual", "checkout": "CarefulRetireeCheckoutVisual", "angry": "CarefulRetireeAngryVisual", "run": "CarefulRetireeRunVisual", "idle_static": true}
 		CLASSIC_VISUAL_ID:
 			return {"idle": "ClassicIdleVisual", "walk": "ClassicWalkVisual", "inspect": "ClassicInspectVisual", "agree": "ClassicInspectVisual", "checkout": "ClassicIdleVisual", "angry": "ClassicRunVisual"}
 		_:
 			return {"idle": "IdleVisual", "walk": "WalkVisual", "agree": "IdleVisual", "checkout": "IdleVisual", "angry": "IdleVisual"}
 
 func _all_visual_node_names() -> Array[String]:
-	return ["IdleVisual", "WalkVisual", "ClassicIdleVisual", "ClassicWalkVisual", "ClassicRunVisual", "ClassicInspectVisual", "GiftBuyerIdleVisual", "GiftBuyerWalkVisual", "GiftBuyerAgreeVisual", "GiftBuyerCheckoutVisual", "GiftBuyerInspectVisual", "ProfessionalIdleVisual", "ProfessionalWalkVisual", "ProfessionalAgreeVisual", "ProfessionalCheckoutVisual", "ProfessionalAngryVisual", "CollectorIdleVisual", "CollectorWalkVisual", "CollectorAgreeVisual", "CollectorCheckoutVisual", "CollectorAngryVisual"]
+	return ["IdleVisual", "WalkVisual", "ClassicIdleVisual", "ClassicWalkVisual", "ClassicRunVisual", "ClassicInspectVisual", "GiftBuyerIdleVisual", "GiftBuyerWalkVisual", "GiftBuyerAgreeVisual", "GiftBuyerCheckoutVisual", "GiftBuyerInspectVisual", "ProfessionalIdleVisual", "ProfessionalWalkVisual", "ProfessionalAgreeVisual", "ProfessionalCheckoutVisual", "ProfessionalAngryVisual", "CollectorIdleVisual", "CollectorWalkVisual", "CollectorAgreeVisual", "CollectorCheckoutVisual", "CollectorAngryVisual", "CarefulRetireeWalkVisual", "CarefulRetireeAgreeVisual", "CarefulRetireeCheckoutVisual", "CarefulRetireeAngryVisual", "CarefulRetireeRunVisual"]
 
 func _stop_animation(animation_player: AnimationPlayer) -> void:
 	if animation_player != null:
@@ -561,6 +579,17 @@ func _play_first_animation(animation_player: AnimationPlayer, loop := true) -> v
 			if animation != null:
 				animation.loop_mode = Animation.LOOP_LINEAR if loop else Animation.LOOP_NONE
 			animation_player.play(animation_name)
+			return
+
+## No reproduce el walk al estar parado: deja únicamente su fotograma inicial.
+func _show_first_animation_pose(animation_player: AnimationPlayer) -> void:
+	if animation_player == null:
+		return
+	for animation_name in animation_player.get_animation_list():
+		if animation_name != "RESET":
+			animation_player.play(animation_name)
+			animation_player.seek(0.0, true)
+			animation_player.pause()
 			return
 
 func _find_animation_player(node: Node) -> AnimationPlayer:

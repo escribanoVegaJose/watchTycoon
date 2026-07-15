@@ -1,9 +1,10 @@
 extends Node
 
-const VISITORS_PATH := "res://data/visitors/mvp_visitors.json"
+const VISITORS_PATH := "res://data/visitors/visitors.json"
 const JEWELRY_TECHNIQUES_PATH := "res://data/jewelry/techniques.json"
 const WATCH_LOTS_PATH := "res://data/watches/auction_lots.json"
 const JEWELRY_LOTS_PATH := "res://data/jewelry/auction_lots.json"
+const VISITOR_VISUAL_IDS := ["standard_customer", "classic_customer", "gift_buyer", "aspirational_professional", "demanding_collector", "careful_retiree"]
 
 var _visitor_profiles: Array[Dictionary] = []
 var _jewelry_techniques: Dictionary = {}
@@ -58,8 +59,14 @@ func _load_visitors() -> void:
 		var spawn_weight := int(profile.get("spawn_weight", 1))
 		var segments: Variant = profile.get("preferred_segments", [])
 		var visual_id := String(profile.get("visual_id", ""))
-		var valid_visual := visual_id in ["standard_customer", "classic_customer", "gift_buyer", "aspirational_professional", "demanding_collector"]
-		if String(profile.get("id", "")).is_empty() or not valid_visual or min_budget <= 0 or max_budget < min_budget or spawn_weight <= 0 or not (segments is Array) or segments.is_empty():
+		var item_types: Variant = profile.get("required_item_types", [])
+		var categories: Variant = profile.get("preferred_categories", [])
+		var preferred_brands: Variant = profile.get("preferred_brands", [])
+		var excluded_categories: Variant = profile.get("excluded_categories", [])
+		var required_tags: Variant = profile.get("required_tags", [])
+		var excluded_tags: Variant = profile.get("excluded_tags", [])
+		var valid_visual := visual_id in VISITOR_VISUAL_IDS
+		if String(profile.get("id", "")).is_empty() or not valid_visual or min_budget <= 0 or max_budget < min_budget or spawn_weight <= 0 or not (segments is Array) or segments.is_empty() or not (item_types is Array) or not (categories is Array) or not (preferred_brands is Array) or not (excluded_categories is Array) or not (required_tags is Array) or not (excluded_tags is Array):
 			push_error("Perfil de visitante inválido: %s" % String(profile.get("id", "sin id")))
 			continue
 		_visitor_profiles.append(profile.duplicate(true))

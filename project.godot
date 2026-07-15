@@ -23,6 +23,7 @@ boot_splash/bg_color=Color(0.0352941, 0.0313726, 0.027451, 1)
 [autoload]
 
 SettingsManager="*res://scripts/autoloads/settings_manager.gd"
+AudioManager="*res://scripts/autoloads/audio_manager.gd"
 EventBus="*res://scripts/autoloads/event_bus.gd"
 GameState="*res://scripts/autoloads/game_state.gd"
 FinanceManager="*res://scripts/autoloads/finance_manager.gd"

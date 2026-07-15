@@ -192,11 +192,13 @@ func _on_changed(snapshot: Dictionary) -> void:
 	EventBus.visitor_negotiation_card_visibility_changed.emit(should_show, _panel.size.y if should_show else 0.0)
 	if not should_show:
 		return
-	var profile: Dictionary = snapshot.get("profile", {})
 	var watch: Dictionary = snapshot.get("watch", {})
 	_customer_name.text = String(snapshot.get("customer_name", "Cliente interesado"))
-	_customer_profile.text = String(profile.get("purchasing_power", "discreto")).capitalize()
-	_piece_name.text = String(watch.get("name", "Pieza expuesta"))
+	var target_name := String(watch.get("name", "Pieza expuesta"))
+	# El cliente sólo puede pedir una pieza listada y físicamente expuesta; mostrar
+	# ese nombre evita que una intención editorial parezca una demanda ajena al stock.
+	_customer_profile.text = "Busca: %s" % target_name
+	_piece_name.text = target_name
 	var brand := String(watch.get("brand", ""))
 	var category := String(watch.get("category", watch.get("item_type", "reloj")))
 	_piece_meta.text = "%s%s" % [brand, " · %s" % category.capitalize() if not category.is_empty() else ""]

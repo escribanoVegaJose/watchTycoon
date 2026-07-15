@@ -11,5 +11,5 @@ iniciar o restaurar la visita. El `visual_id` validado por `DataRegistry` decide
 
 `classic_customer_run.glb` y `classic_customer_inspect.glb` están instanciados como
 `ClassicRunVisual` y `ClassicInspectVisual` en `Customer.tscn`, ocultos y preparados
-para estados futuros. El MVP no crea estados nuevos ni altera la máquina de ventas:
+para estados futuros. La versión actual no crea estados nuevos ni altera la máquina de ventas:
 las transiciones existentes sólo alternan idle/walk.
