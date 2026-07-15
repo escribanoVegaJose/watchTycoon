@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FacilityDefinition" format=3]
+
+[ext_resource type="Script" uid="uid://dk55n3smfeikw" path="res://scripts/gameplay/facility_definition.gd" id="1_definition"]
+[ext_resource type="PackedScene" path="res://assets/meshy/godot_ready/Meshy_AI_Wooden_display_cabine_0714064922_texture.glb" id="2_visual"]
+[ext_resource type="Texture2D" uid="uid://bur6ngdq3nmwm" path="res://assets/icons/facilities.svg" id="3_icon"]
+
+[resource]
+script = ExtResource("1_definition")
+item_id = "display_counter_01"
+display_name = "Mostrador de exposición"
+catalog_description = "Expone relojes en la boutique para completar tu vitrina."
+catalog_icon = ExtResource("3_icon")
+price = 1800
+visual_scene = ExtResource("2_visual")
+visual_scale = Vector3(2.4, 2.4, 2.4)
+floor_offset = 0.577
+footprint_half_extents = Vector2(2.3, 0.5)

@@ -1,0 +1,7 @@
+{
+  "month_days": 30,
+  "rent": 1200,
+  "utilities_base": 150,
+  "utilities_per_unit": 10,
+  "taxes_and_fees": 250
+}

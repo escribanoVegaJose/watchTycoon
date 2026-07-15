@@ -4,6 +4,7 @@ extends Node3D
 @export var fast_move_multiplier := 1.8
 @export var rotate_speed := 0.005
 @export var zoom_speed := 1.4
+@export var touchpad_zoom_sensitivity := 1.0
 @export var min_zoom := 6.0
 @export var max_zoom := 24.0
 @export var min_pitch := deg_to_rad(-68.0)
@@ -23,8 +24,11 @@ func _ready() -> void:
 	pitch_pivot.rotation.x = deg_to_rad(-48.0)
 	yaw_pivot.rotation.y = deg_to_rad(45.0)
 	EventBus.placement_state_changed.connect(_on_placement_state_changed)
+	EventBus.camera_rotation_cancel_requested.connect(_on_camera_rotation_cancel_requested)
 
 func _process(delta: float) -> void:
+	if TimeManager.is_paused:
+		return
 	var input := Vector3.ZERO
 	if Input.is_action_pressed("camera_forward"):
 		input.z += 1.0
@@ -55,15 +59,29 @@ func _process(delta: float) -> void:
 	global_position.z = clamp(global_position.z, bounds_min.y, bounds_max.y)
 
 func _input(event: InputEvent) -> void:
+	if TimeManager.is_paused:
+		rotating = false
+		return
 	if placement_active:
 		return
+	# _input runs before a Control's gui_input. Keep wheel and trackpad zoom over
+	# an interactive product turntable inside that turntable instead of also
+	# changing the workshop camera.
+	if (event is InputEventMouseButton and (event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN)) or event is InputEventMagnifyGesture:
+		if _is_pointer_over_interactive_preview():
+			return
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_RIGHT:
+		if event.button_index == MOUSE_BUTTON_MIDDLE:
 			rotating = event.pressed
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			camera.position.z = max(min_zoom, camera.position.z - zoom_speed)
+			_set_zoom(camera.position.z - zoom_speed)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			camera.position.z = min(max_zoom, camera.position.z + zoom_speed)
+			_set_zoom(camera.position.z + zoom_speed)
+
+	if event is InputEventMagnifyGesture:
+		# macOS trackpads report pinch gestures as a magnification factor.
+		# A factor above 1.0 brings the camera closer; below 1.0 moves it away.
+		_set_zoom(camera.position.z / lerpf(1.0, event.factor, touchpad_zoom_sensitivity))
 
 	if event is InputEventMouseMotion and rotating:
 		yaw_pivot.rotation.y -= event.relative.x * rotate_speed
@@ -74,3 +92,17 @@ func _on_placement_state_changed(active: bool, _item_name: String) -> void:
 	placement_active = active
 	if active:
 		rotating = false
+
+func _on_camera_rotation_cancel_requested() -> void:
+	rotating = false
+
+func _set_zoom(value: float) -> void:
+	camera.position.z = clampf(value, min_zoom, max_zoom)
+
+func _is_pointer_over_interactive_preview() -> bool:
+	var hovered := get_viewport().gui_get_hovered_control()
+	while hovered != null:
+		if hovered.is_in_group("interactive_3d_preview"):
+			return true
+		hovered = hovered.get_parent() as Control
+	return false

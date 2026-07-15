@@ -1,15 +1,20 @@
-[gd_resource type="Resource" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3 uid="uid://c37hf1pwg2e8f"]
 
-[ext_resource type="Script" path="res://scripts/gameplay/placeable_definition.gd" id="1_definition"]
-[ext_resource type="PackedScene" path="res://assets/meshy/raw/Meshy_AI_Wooden_glass_door_dis_0713151436_texture.glb" id="2_visual"]
+[ext_resource type="Script" uid="uid://jak2lp0ihxc3" path="res://scripts/gameplay/placeable_definition.gd" id="1_definition"]
+[ext_resource type="PackedScene" uid="uid://0kk7yamf268u" path="res://assets/meshy/godot_ready/window_wood_open_glass.glb" id="2_visual"]
+[ext_resource type="Texture2D" uid="uid://dybh5qmm3obfx" path="res://assets/icons/window.svg" id="3_icon"]
 
 [resource]
 script = ExtResource("1_definition")
 item_id = "window_wood_01"
 display_name = "Ventana de madera y cristal"
+catalog_icon = ExtResource("3_icon")
 price = 650
 visual_scene = ExtResource("2_visual")
 visual_scale = Vector3(1.1, 1.1, 1.1)
-placement_half_width = 1.15
-placement_half_height = 1.55
+compatible_wall_tags = PackedStringArray("interior_wall")
+placement_half_height = 0.917148
+opening_half_width = 0.75
+opening_half_height = 0.75
 wall_surface_offset = 0.2
+creates_wall_opening = true

@@ -1,0 +1,120 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/customer_visitor.gd" id="1_customer"]
+[ext_resource type="PackedScene" path="res://assets/characters/customer_idle.glb" id="2_idle"]
+[ext_resource type="PackedScene" path="res://assets/characters/customer_walk.glb" id="3_walk"]
+[ext_resource type="PackedScene" path="res://assets/characters/classic_customer_idle.glb" id="4_classic_idle"]
+[ext_resource type="PackedScene" path="res://assets/characters/classic_customer_walk.glb" id="5_classic_walk"]
+[ext_resource type="PackedScene" path="res://assets/characters/classic_customer_run.glb" id="6_classic_run"]
+[ext_resource type="PackedScene" path="res://assets/characters/classic_customer_inspect.glb" id="7_classic_inspect"]
+[ext_resource type="PackedScene" path="res://assets/characters/gift_buyer_idle.glb" id="8_gift_idle"]
+[ext_resource type="PackedScene" path="res://assets/characters/gift_buyer_walk.glb" id="9_gift_walk"]
+[ext_resource type="PackedScene" path="res://assets/characters/gift_buyer_agree.glb" id="10_gift_agree"]
+[ext_resource type="PackedScene" path="res://assets/characters/gift_buyer_checkout.glb" id="11_gift_checkout"]
+[ext_resource type="PackedScene" path="res://assets/characters/gift_buyer_inspect.glb" id="12_gift_inspect"]
+[ext_resource type="PackedScene" path="res://assets/characters/aspirational_professional_idle.glb" id="13_professional_idle"]
+[ext_resource type="PackedScene" path="res://assets/characters/aspirational_professional_walk.glb" id="14_professional_walk"]
+[ext_resource type="PackedScene" path="res://assets/characters/aspirational_professional_agree.glb" id="15_professional_agree"]
+[ext_resource type="PackedScene" path="res://assets/characters/aspirational_professional_checkout.glb" id="16_professional_checkout"]
+[ext_resource type="PackedScene" path="res://assets/characters/aspirational_professional_angry.glb" id="17_professional_angry"]
+[ext_resource type="PackedScene" path="res://assets/characters/demanding_collector_idle.glb" id="18_collector_idle"]
+[ext_resource type="PackedScene" path="res://assets/characters/demanding_collector_walk.glb" id="19_collector_walk"]
+[ext_resource type="PackedScene" path="res://assets/characters/demanding_collector_agree.glb" id="20_collector_agree"]
+[ext_resource type="PackedScene" path="res://assets/characters/demanding_collector_checkout.glb" id="21_collector_checkout"]
+[ext_resource type="PackedScene" path="res://assets/characters/demanding_collector_angry.glb" id="22_collector_angry"]
+
+[sub_resource type="CapsuleShape3D" id="CharacterCapsule"]
+radius = 0.27
+height = 1.8
+
+[node name="Customer" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 8
+script = ExtResource("1_customer")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.9, 0)
+shape = SubResource("CharacterCapsule")
+
+[node name="IdleVisual" parent="." instance=ExtResource("2_idle")]
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="WalkVisual" parent="." instance=ExtResource("3_walk")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ClassicIdleVisual" parent="." instance=ExtResource("4_classic_idle")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ClassicWalkVisual" parent="." instance=ExtResource("5_classic_walk")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ClassicRunVisual" parent="." instance=ExtResource("6_classic_run")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ClassicInspectVisual" parent="." instance=ExtResource("7_classic_inspect")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="GiftBuyerIdleVisual" parent="." instance=ExtResource("8_gift_idle")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="GiftBuyerWalkVisual" parent="." instance=ExtResource("9_gift_walk")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="GiftBuyerAgreeVisual" parent="." instance=ExtResource("10_gift_agree")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="GiftBuyerCheckoutVisual" parent="." instance=ExtResource("11_gift_checkout")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="GiftBuyerInspectVisual" parent="." instance=ExtResource("12_gift_inspect")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ProfessionalIdleVisual" parent="." instance=ExtResource("13_professional_idle")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ProfessionalWalkVisual" parent="." instance=ExtResource("14_professional_walk")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ProfessionalAgreeVisual" parent="." instance=ExtResource("15_professional_agree")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ProfessionalCheckoutVisual" parent="." instance=ExtResource("16_professional_checkout")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="ProfessionalAngryVisual" parent="." instance=ExtResource("17_professional_angry")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CollectorIdleVisual" parent="." instance=ExtResource("18_collector_idle")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CollectorWalkVisual" parent="." instance=ExtResource("19_collector_walk")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CollectorAgreeVisual" parent="." instance=ExtResource("20_collector_agree")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CollectorCheckoutVisual" parent="." instance=ExtResource("21_collector_checkout")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CollectorAngryVisual" parent="." instance=ExtResource("22_collector_angry")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)

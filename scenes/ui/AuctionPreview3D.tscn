@@ -1,0 +1,47 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/auction_preview_3d.gd" id="1_script"]
+
+[sub_resource type="Environment" id="Environment_auction"]
+background_mode = 1
+background_color = Color(0.96, 0.96, 0.96, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.16, 0.16, 0.16, 1)
+ambient_light_energy = 0.65
+
+[node name="AuctionPreview3D" type="SubViewportContainer"]
+custom_minimum_size = Vector2(260, 190)
+mouse_filter = 0
+script = ExtResource("1_script")
+
+[node name="AuctionViewport" type="SubViewport" parent="."]
+transparent_bg = false
+own_world_3d = true
+handle_input_locally = false
+size = Vector2i(640, 480)
+msaa_3d = 2
+render_target_update_mode = 4
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="AuctionViewport"]
+environment = SubResource("Environment_auction")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="AuctionViewport"]
+rotation_degrees = Vector3(-42, -28, 0)
+light_color = Color(1, 1, 1, 1)
+light_energy = 1.25
+shadow_enabled = true
+light_angular_distance = 0.5
+
+[node name="FillLight" type="OmniLight3D" parent="AuctionViewport"]
+position = Vector3(-1.8, 1.0, 1.5)
+light_color = Color(1, 1, 1, 1)
+light_energy = 0.65
+omni_range = 4.0
+
+[node name="Turntable" type="Node3D" parent="AuctionViewport"]
+rotation_degrees = Vector3(0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="AuctionViewport"]
+position = Vector3(0, 0, 5)
+current = true
+fov = 26.0

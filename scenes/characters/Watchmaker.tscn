@@ -1,0 +1,31 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/watchmaker_player.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://assets/characters/watchmaker_idle.glb" id="2_idle"]
+[ext_resource type="PackedScene" path="res://assets/characters/watchmaker_walk.glb" id="3_walk"]
+[ext_resource type="Script" path="res://scripts/gameplay/carried_watch_visual.gd" id="4_carried_watch"]
+
+[sub_resource type="CapsuleShape3D" id="CharacterCapsule"]
+radius = 0.32
+height = 1.8
+
+[node name="Watchmaker" type="CharacterBody3D"]
+collision_layer = 16
+collision_mask = 8
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.9, 0)
+shape = SubResource("CharacterCapsule")
+
+[node name="IdleVisual" parent="." instance=ExtResource("2_idle")]
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="WalkVisual" parent="." instance=ExtResource("3_walk")]
+visible = false
+rotation = Vector3(0, 3.14159, 0)
+
+[node name="CarryAnchor" type="Node3D" parent="."]
+position = Vector3(0.28, 1.05, -0.24)
+rotation = Vector3(0.2, 0, 0)
+script = ExtResource("4_carried_watch")

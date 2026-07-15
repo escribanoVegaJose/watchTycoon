@@ -1,29 +1,22 @@
 extends DirectionalLight3D
 
-## Ciclo compacto: 60 s de luz y 60 s de noche.
-@export var day_duration_seconds: float = 60.0
-@export var night_duration_seconds: float = 60.0
-@export var sunrise_energy: float = 0.12
-@export var noon_energy: float = 1.8
+@export var sunrise_energy: float = 0.18
+@export var noon_energy: float = 1.05
 @export var moonlight_energy: float = 0.035
-@export var minimum_elevation_degrees: float = 8.0
-@export var maximum_elevation_degrees: float = 72.0
+@export var minimum_elevation_degrees: float = 18.0
+@export var maximum_elevation_degrees: float = 48.0
 @export var ingress_azimuth_start_degrees: float = -55.0
 @export var ingress_azimuth_end_degrees: float = -25.0
 
-var _elapsed_seconds := 30.0
-
 func _ready() -> void:
-	_update_sun_light(0.5)
+	EventBus.time_snapshot_changed.connect(_on_time_snapshot_changed)
+	EventBus.time_snapshot_requested.emit()
 
-func _process(delta: float) -> void:
-	var safe_day_duration := maxf(day_duration_seconds, 0.1)
-	var safe_night_duration := maxf(night_duration_seconds, 0.1)
-	var cycle_duration := safe_day_duration + safe_night_duration
-	_elapsed_seconds = fmod(_elapsed_seconds + delta, cycle_duration)
-
-	if _elapsed_seconds < safe_day_duration:
-		_update_sun_light(_elapsed_seconds / safe_day_duration)
+func _on_time_snapshot_changed(snapshot: Dictionary) -> void:
+	var intraday_progress := float(snapshot.get("intraday_progress", 0.0))
+	# The first 60% represents 08:00–20:00; the remaining phase is night.
+	if intraday_progress < 0.6:
+		_update_sun_light(intraday_progress / 0.6)
 	else:
 		_update_night_light()
 
@@ -46,8 +39,10 @@ func _update_sun_light(progress: float) -> void:
 
 	look_at(global_position + shine_direction, Vector3.UP)
 	light_energy = lerpf(sunrise_energy, noon_energy, daylight_curve)
-	light_color = Color(1.0, 0.72, 0.48).lerp(Color(1.0, 0.96, 0.86), daylight_curve)
+	# El sol conserva una calidez natural al amanecer y se vuelve casi blanco
+	# a mediodía, sin teñir toda la tienda de naranja.
+	light_color = Color(1.0, 0.84, 0.66).lerp(Color(1.0, 0.97, 0.9), daylight_curve)
 
 func _update_night_light() -> void:
 	light_energy = moonlight_energy
-	light_color = Color(0.42, 0.52, 0.72)
+	light_color = Color(0.48, 0.35, 0.3)

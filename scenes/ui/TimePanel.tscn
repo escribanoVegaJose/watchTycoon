@@ -1,0 +1,152 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/time_panel.gd" id="1_time_panel"]
+[ext_resource type="Texture2D" path="res://assets/icons/time_play.svg" id="2_time_play"]
+[ext_resource type="Texture2D" path="res://assets/icons/time_pause.svg" id="3_time_pause"]
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+bg_color = Color(0.035, 0.047, 0.05, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.3, 0.26, 0.7)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="ButtonNormal"]
+bg_color = Color(0.035, 0.047, 0.05, 0)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+bg_color = Color(0.22, 0.18, 0.11, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="ButtonSelected"]
+bg_color = Color(0.64, 0.45, 0.16, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.84, 0.49, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="ButtonPressed"]
+bg_color = Color(0.45, 0.31, 0.1, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="ButtonGroup" id="SpeedButtonGroup"]
+
+[node name="TimePanel" type="PanelContainer"]
+process_mode = 3
+custom_minimum_size = Vector2(250, 56)
+layout_mode = 2
+theme_override_styles/panel = SubResource("PanelStyle")
+script = ExtResource("1_time_panel")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="Row" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DateTimeLabel" type="Label" parent="Margin/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 0.82)
+theme_override_font_sizes/font_size = 11
+text = "03/03 · 08:00"
+vertical_alignment = 1
+
+[node name="ControlsCapsule" type="PanelContainer" parent="Margin/Row"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="ControlsRow" type="HBoxContainer" parent="Margin/Row/ControlsCapsule"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 2
+
+[node name="PauseButton" type="Button" parent="Margin/Row/ControlsCapsule/ControlsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+toggle_mode = true
+tooltip_text = "Pausar o reanudar el tiempo (Espacio)"
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.09, 0.04, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/normal_pressed = SubResource("ButtonSelected")
+icon = ExtResource("3_time_pause")
+expand_icon = true
+
+[node name="Speed1Button" type="Button" parent="Margin/Row/ControlsCapsule/ControlsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(31, 40)
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("SpeedButtonGroup")
+tooltip_text = "Velocidad normal (1)"
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.09, 0.04, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/normal_pressed = SubResource("ButtonSelected")
+text = "×1"
+metadata/speed = 1
+
+[node name="Speed2Button" type="Button" parent="Margin/Row/ControlsCapsule/ControlsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(31, 40)
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("SpeedButtonGroup")
+tooltip_text = "Velocidad doble (2)"
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.09, 0.04, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/normal_pressed = SubResource("ButtonSelected")
+text = "×2"
+metadata/speed = 2
+
+[node name="Speed3Button" type="Button" parent="Margin/Row/ControlsCapsule/ControlsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(31, 40)
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("SpeedButtonGroup")
+tooltip_text = "Velocidad triple (3)"
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.09, 0.04, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/normal_pressed = SubResource("ButtonSelected")
+text = "×3"
+metadata/speed = 3

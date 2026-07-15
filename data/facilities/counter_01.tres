@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="FacilityDefinition" format=3 uid="uid://bpavus51bimva"]
+
+[ext_resource type="Script" uid="uid://dk55n3smfeikw" path="res://scripts/gameplay/facility_definition.gd" id="1_definition"]
+[ext_resource type="PackedScene" path="res://assets/meshy/godot_ready/point_of_sale_counter.glb" id="2_visual"]
+[ext_resource type="Texture2D" uid="uid://bur6ngdq3nmwm" path="res://assets/icons/facilities.svg" id="3_icon"]
+
+[resource]
+script = ExtResource("1_definition")
+item_id = "counter_01"
+display_name = "Punto de venta"
+catalog_description = "Desbloquea Comercio para adquirir y vender relojes."
+catalog_icon = ExtResource("3_icon")
+price = 1200
+visual_scene = ExtResource("2_visual")
+visual_scale = Vector3(1.35, 1.35, 1.35)
+floor_offset = 0.99375
+footprint_half_extents = Vector2(1.28355, 0.78509)
+max_installations = 1

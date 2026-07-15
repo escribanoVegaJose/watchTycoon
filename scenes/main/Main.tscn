@@ -5,15 +5,36 @@
 [ext_resource type="Script" uid="uid://cdtdefbvlv4xc" path="res://scripts/gameplay/wall_visibility_controller.gd" id="3_wall_visibility"]
 [ext_resource type="Texture2D" uid="uid://cn0w6y4c76pox" path="res://assets/textures/floor_parquet.png" id="4_floor_parquet"]
 [ext_resource type="Script" uid="uid://b7nplu8vrqsum" path="res://scripts/gameplay/sun_light_test.gd" id="5_sun_light_test"]
-[ext_resource type="PackedScene" path="res://assets/meshy/raw/Meshy_AI_A_luxury_jewelry_stor_0713145533_texture.glb" id="6_entrance_door"]
-[ext_resource type="Script" uid="uid://bna21svar0x0c" path="res://scripts/gameplay/construction_slot.gd" id="9_construction_slot"]
-[ext_resource type="Shader" path="res://scenes/main/wall_plaster.gdshader" id="10_wall_plaster"]
-[ext_resource type="Script" path="res://scripts/gameplay/sunlit_glass_panel.gd" id="11_sunlit_glass"]
-[ext_resource type="Texture2D" path="res://assets/icons/furniture_armchair.svg" id="12_furniture_icon"]
-[ext_resource type="Texture2D" path="res://assets/icons/window.svg" id="13_window_icon"]
-[ext_resource type="Resource" path="res://data/furniture/window_wood_01.tres" id="14_window_definition"]
-[ext_resource type="Script" path="res://scripts/gameplay/placement_wall.gd" id="15_placement_wall"]
-[ext_resource type="Script" path="res://scripts/gameplay/facade_placement_controller.gd" id="16_placement_controller"]
+[ext_resource type="PackedScene" uid="uid://u3q0pn02s70u" path="res://assets/meshy/raw/Meshy_AI_A_luxury_jewelry_stor_0713145533_texture.glb" id="6_entrance_door"]
+[ext_resource type="Script" uid="uid://jak2lp0ihxc3" path="res://scripts/gameplay/placeable_definition.gd" id="7_hjnkw"]
+[ext_resource type="Texture2D" uid="uid://ba7acdo1120ye" path="res://assets/icons/furniture_armchair.svg" id="12_furniture_icon"]
+[ext_resource type="Resource" uid="uid://c37hf1pwg2e8f" path="res://data/furniture/window_wood_01.tres" id="14_window_definition"]
+[ext_resource type="Script" uid="uid://bslv0tij1w8fm" path="res://scripts/gameplay/facade_placement_controller.gd" id="16_placement_controller"]
+[ext_resource type="PackedScene" path="res://scenes/ui/TimePanel.tscn" id="17_time_panel"]
+[ext_resource type="Script" uid="uid://bcjnw35e4mi52" path="res://scripts/gameplay/facade_wall.gd" id="18_facade_wall"]
+[ext_resource type="Script" uid="uid://dcmgy8ag5dlg2" path="res://scripts/gameplay/facade_openings_controller.gd" id="19_facade_openings"]
+[ext_resource type="Texture2D" uid="uid://c5ypspf5hh5os" path="res://assets/icons/palette.svg" id="20_palette_icon"]
+[ext_resource type="Texture2D" uid="uid://cdxr4f7dmchp" path="res://assets/icons/move.svg" id="21_move_icon"]
+[ext_resource type="PackedScene" path="res://scenes/characters/Watchmaker.tscn" id="22_watchmaker"]
+[ext_resource type="Script" uid="uid://dphi3lcfubf7a" path="res://scripts/gameplay/world_click_controller.gd" id="23_world_click"]
+[ext_resource type="PackedScene" path="res://scenes/characters/Customer.tscn" id="24_customer"]
+[ext_resource type="Texture2D" uid="uid://bur6ngdq3nmwm" path="res://assets/icons/facilities.svg" id="25_facilities_icon"]
+[ext_resource type="Resource" uid="uid://bpavus51bimva" path="res://data/facilities/counter_01.tres" id="26_counter_definition"]
+[ext_resource type="Script" uid="uid://25mr1wjww6ad" path="res://scripts/gameplay/facility_placement_controller.gd" id="27_facility_controller"]
+[ext_resource type="Script" uid="uid://dk55n3smfeikw" path="res://scripts/gameplay/facility_definition.gd" id="28_facility_definition"]
+[ext_resource type="Texture2D" uid="uid://c1l4k1p7fppea" path="res://assets/icons/demolish.svg" id="29_demolish_icon"]
+[ext_resource type="Resource" path="res://data/facilities/display_counter_01.tres" id="30_display_counter_definition"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CommercePanel.tscn" id="31_commerce_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/InventoryPanel.tscn" id="37_inventory_panel"]
+[ext_resource type="Script" uid="uid://cn3uhlu6yb3qq" path="res://scripts/gameplay/world_selection_highlight.gd" id="32_selection_highlight"]
+[ext_resource type="Script" uid="uid://d16o3ni3gqsx2" path="res://scripts/gameplay/watch_display_controller.gd" id="33_watch_display_controller"]
+[ext_resource type="Script" uid="uid://v2lrj0olvcmj" path="res://scripts/gameplay/watch_deposit_controller.gd" id="34_watch_deposit_controller"]
+[ext_resource type="Script" path="res://scripts/gameplay/watch_display_placement_controller.gd" id="35_display_placement_controller"]
+[ext_resource type="Script" path="res://scripts/gameplay/visitor_negotiation_manager.gd" id="36_visitor_negotiation_manager"]
+[ext_resource type="Texture2D" path="res://assets/icons/auction.svg" id="38_auction_icon"]
+[ext_resource type="Texture2D" path="res://assets/icons/inventory.svg" id="39_inventory_icon"]
+[ext_resource type="Texture2D" path="res://assets/icons/settings.svg" id="40_settings_icon"]
+[ext_resource type="Script" path="res://scripts/ui/visitor_negotiation_panel.gd" id="41_visitor_negotiation_panel"]
 
 [sub_resource type="BoxMesh" id="FloorMesh"]
 size = Vector3(18, 0.22, 13)
@@ -21,26 +42,15 @@ size = Vector3(18, 0.22, 13)
 [sub_resource type="StandardMaterial3D" id="MatFloor"]
 albedo_color = Color(0.78, 0.72, 0.62, 1)
 albedo_texture = ExtResource("4_floor_parquet")
-roughness = 0.38
+roughness = 0.7
 uv1_scale = Vector3(7.4, 6, 1)
 
-[sub_resource type="BoxMesh" id="BackWallMesh"]
-size = Vector3(18, 4.2, 0.32)
+[sub_resource type="BoxShape3D" id="WalkableFloorShape"]
+size = Vector3(18, 0.22, 13)
 
-[sub_resource type="BoxMesh" id="BackWallSegmentMesh"]
-size = Vector3(7.5, 4.2, 0.32)
-
-[sub_resource type="ShaderMaterial" id="MatWall"]
-shader = ExtResource("10_wall_plaster")
-
-[sub_resource type="BoxMesh" id="SideWallMesh"]
-size = Vector3(0.32, 4.2, 13)
-
-[sub_resource type="BoxShape3D" id="BackWallPlacementShape"]
-size = Vector3(18, 4.2, 0.32)
-
-[sub_resource type="BoxShape3D" id="SideWallPlacementShape"]
-size = Vector3(0.32, 4.2, 13)
+[sub_resource type="StandardMaterial3D" id="MatWall"]
+albedo_color = Color(0.78, 0.71, 0.6, 1)
+roughness = 0.72
 
 [sub_resource type="StandardMaterial3D" id="MatCeiling"]
 albedo_color = Color(0.055, 0.048, 0.042, 1)
@@ -48,13 +58,13 @@ roughness = 0.72
 
 [sub_resource type="Environment" id="StoreEnvironment"]
 background_mode = 1
-background_color = Color(0.018, 0.017, 0.016, 1)
-ambient_light_source = 3
-ambient_light_color = Color(0.72, 0.62, 0.5, 1)
-ambient_light_energy = 0.4
+background_color = Color(0.52, 0.6, 0.7, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.62, 0.67, 0.73, 1)
+ambient_light_energy = 0.58
 tonemap_mode = 2
 glow_enabled = true
-glow_intensity = 0.18
+glow_intensity = 0.08
 
 [sub_resource type="StyleBoxFlat" id="PanelDark"]
 bg_color = Color(0.0431373, 0.0666667, 0.0705882, 0.82)
@@ -70,6 +80,54 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
+[sub_resource type="StyleBoxFlat" id="ButtonDisabled"]
+bg_color = Color(0.15, 0.15, 0.145, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.38, 0.35, 0.3, 0.45)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="BottomNavBase"]
+bg_color = Color(0.025, 0.035, 0.037, 0.97)
+
+[sub_resource type="StyleBoxFlat" id="BottomCard"]
+bg_color = Color(0.075, 0.09, 0.09, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="ReputationProgressBackground"]
+bg_color = Color(0.12, 0.105, 0.08, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="ReputationProgressFill"]
+bg_color = Color(0.78, 0.59, 0.25, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="ButtonBlack"]
+bg_color = Color(0.0352941, 0.0313725, 0.027451, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.72, 0.57, 0.32, 0.58)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [sub_resource type="StyleBoxFlat" id="PanelCream"]
 bg_color = Color(0.827451, 0.772549, 0.654902, 0.92)
 corner_radius_top_left = 14
@@ -77,8 +135,116 @@ corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
+[sub_resource type="StyleBoxFlat" id="CustomerAttentionCard"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.42, 0.22, 0.42)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="PanelSelection"]
+bg_color = Color(0.0431373, 0.0666667, 0.0705882, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.78, 0.35, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="SwatchIvory"]
+bg_color = Color(0.78, 0.71, 0.6, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.96, 0.91, 0.8, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchGraphite"]
+bg_color = Color(0.2, 0.22, 0.23, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchDeepGreen"]
+bg_color = Color(0.08, 0.2, 0.16, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchNightBlue"]
+bg_color = Color(0.07, 0.12, 0.23, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchSteel"]
+bg_color = Color(0.43, 0.46, 0.47, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchSand"]
+bg_color = Color(0.64, 0.53, 0.4, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchTerracotta"]
+bg_color = Color(0.46, 0.2, 0.14, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchBurgundy"]
+bg_color = Color(0.28, 0.07, 0.09, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchSage"]
+bg_color = Color(0.31, 0.4, 0.32, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchPetrol"]
+bg_color = Color(0.05, 0.24, 0.29, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SwatchPlum"]
+bg_color = Color(0.2, 0.11, 0.22, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="Main" type="Node3D" unique_id=2055157705]
 script = ExtResource("1_main_script")
+furniture_definitions = Array[ExtResource("7_hjnkw")]([ExtResource("14_window_definition")])
+facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition")])
 
 [node name="Architecture" type="Node3D" parent="." unique_id=1586308290]
 
@@ -87,111 +253,61 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
 mesh = SubResource("FloorMesh")
 surface_material_override/0 = SubResource("MatFloor")
 
+[node name="WalkableFloor" type="StaticBody3D" parent="Architecture" unique_id=1457917241]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/WalkableFloor" unique_id=2066512499]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+shape = SubResource("WalkableFloorShape")
+
 [node name="BackWall" type="Node3D" parent="Architecture" unique_id=238690930]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, -6.5)
-
-[node name="LeftSegment" type="MeshInstance3D" parent="Architecture/BackWall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.25, 0, 0)
-mesh = SubResource("BackWallSegmentMesh")
-surface_material_override/0 = SubResource("MatWall")
-
-[node name="RightSegment" type="MeshInstance3D" parent="Architecture/BackWall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 0, 0)
-mesh = SubResource("BackWallSegmentMesh")
-surface_material_override/0 = SubResource("MatWall")
+script = ExtResource("18_facade_wall")
+wall_id = "back"
+half_width = 9.0
+wall_material = SubResource("MatWall")
+door_opening = Rect2(1.1585, -1.789, 0.623, 2.019)
+has_door_opening = true
 
 [node name="FacadeSlots" type="Node3D" parent="Architecture" unique_id=2044082106]
 
-[node name="EntranceDoor" parent="Architecture/FacadeSlots" instance=ExtResource("6_entrance_door")]
-transform = Transform3D(1.55, 0, 0, 0, 1.55, 0, 0, 0, 1.55, 0, 1.47, -6.16)
+[node name="EntranceDoor" parent="Architecture/FacadeSlots" unique_id=2039982728 instance=ExtResource("6_entrance_door")]
+transform = Transform3D(1.55, 0, 0, 0, 1.55, 0, 0, 0, 1.55, 1.47, 1.47, -6.16)
 
-[node name="LeftWall" type="MeshInstance3D" parent="Architecture" unique_id=551885232]
+[node name="LeftWall" type="Node3D" parent="Architecture" unique_id=551885232]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.1, 0)
-mesh = SubResource("SideWallMesh")
-surface_material_override/0 = SubResource("MatWall")
-
-[node name="RightWall" type="MeshInstance3D" parent="Architecture" unique_id=509223754]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.1, 0)
-mesh = SubResource("SideWallMesh")
-surface_material_override/0 = SubResource("MatWall")
-
-[node name="FrontWall" type="MeshInstance3D" parent="Architecture" unique_id=1271212284]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 6.5)
-mesh = SubResource("BackWallMesh")
-surface_material_override/0 = SubResource("MatWall")
-
-[node name="PlacementWalls" type="Node3D" parent="Architecture"]
-
-[node name="BackWallLeftPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, -6.5)
-collision_layer = 2
-collision_mask = 0
-script = ExtResource("15_placement_wall")
-wall_id = "back"
-interior_normal = Vector3(0, 0, 1)
-local_horizontal_axis = Vector3(1, 0, 0)
-usable_half_width = 3.6
-local_horizontal_center = -5.25
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/BackWallLeftPlacement"]
-transform = Transform3D(0.416667, 0, 0, 0, 1, 0, 0, 0, 1, -5.25, 0, 0)
-shape = SubResource("BackWallPlacementShape")
-
-[node name="BackWallRightPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, -6.5)
-collision_layer = 2
-collision_mask = 0
-script = ExtResource("15_placement_wall")
-wall_id = "back"
-interior_normal = Vector3(0, 0, 1)
-local_horizontal_axis = Vector3(1, 0, 0)
-usable_half_width = 3.6
-local_horizontal_center = 5.25
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/BackWallRightPlacement"]
-transform = Transform3D(0.416667, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 0, 0)
-shape = SubResource("BackWallPlacementShape")
-
-[node name="FrontWallPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 6.5)
-collision_layer = 2
-collision_mask = 0
-script = ExtResource("15_placement_wall")
-wall_id = "front"
-interior_normal = Vector3(0, 0, -1)
-local_horizontal_axis = Vector3(1, 0, 0)
-usable_half_width = 8.7
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/FrontWallPlacement"]
-shape = SubResource("BackWallPlacementShape")
-
-[node name="LeftWallPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.1, 0)
-collision_layer = 2
-collision_mask = 0
-script = ExtResource("15_placement_wall")
+script = ExtResource("18_facade_wall")
 wall_id = "left"
+horizontal_axis = Vector3(0, 0, 1)
 interior_normal = Vector3(1, 0, 0)
-local_horizontal_axis = Vector3(0, 0, 1)
-usable_half_width = 6.2
+half_width = 6.5
+wall_material = SubResource("MatWall")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/LeftWallPlacement"]
-shape = SubResource("SideWallPlacementShape")
-
-[node name="RightWallPlacement" type="StaticBody3D" parent="Architecture/PlacementWalls"]
+[node name="RightWall" type="Node3D" parent="Architecture" unique_id=509223754]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.1, 0)
-collision_layer = 2
-collision_mask = 0
-script = ExtResource("15_placement_wall")
+script = ExtResource("18_facade_wall")
 wall_id = "right"
+horizontal_axis = Vector3(0, 0, 1)
 interior_normal = Vector3(-1, 0, 0)
-local_horizontal_axis = Vector3(0, 0, 1)
-usable_half_width = 6.2
+half_width = 6.5
+wall_material = SubResource("MatWall")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Architecture/PlacementWalls/RightWallPlacement"]
-shape = SubResource("SideWallPlacementShape")
+[node name="FrontWall" type="Node3D" parent="Architecture" unique_id=1271212284]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 6.5)
+script = ExtResource("18_facade_wall")
+wall_id = "front"
+half_width = 9.0
+wall_material = SubResource("MatWall")
 
-[node name="PlacedFacadeItems" type="Node3D" parent="Architecture"]
+[node name="FacadeOpeningsController" type="Node" parent="Architecture" unique_id=407006792]
+script = ExtResource("19_facade_openings")
+wall_paths = Array[NodePath]([NodePath("../BackWall"), NodePath("../FrontWall"), NodePath("../LeftWall"), NodePath("../RightWall")])
+placeable_definitions = Array[ExtResource("7_hjnkw")]([ExtResource("14_window_definition")])
+default_opening_paths = Array[NodePath]([NodePath(""), NodePath(""), NodePath(""), NodePath("")])
+
+[node name="PlacedFacadeItems" type="Node3D" parent="Architecture" unique_id=1251824660]
+
+[node name="PlacedFacilities" type="Node3D" parent="Architecture" unique_id=667553308]
 
 [node name="CeilingShadowBlocker" type="MeshInstance3D" parent="Architecture" unique_id=809776829]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.31, 0)
@@ -207,26 +323,61 @@ back_wall_path = NodePath("../BackWall")
 left_wall_path = NodePath("../LeftWall")
 right_wall_path = NodePath("../RightWall")
 
+[node name="WorldSelectionHighlight" type="Node3D" parent="Architecture" unique_id=1576634870]
+script = ExtResource("32_selection_highlight")
+back_wall_path = NodePath("../BackWall")
+front_wall_path = NodePath("../FrontWall")
+left_wall_path = NodePath("../LeftWall")
+right_wall_path = NodePath("../RightWall")
+
 [node name="Lighting" type="Node3D" parent="." unique_id=1163511598]
 
 [node name="StreetWindowLight" type="DirectionalLight3D" parent="Lighting" unique_id=1691916014]
 transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 0, 7, 4)
-light_color = Color(0.72, 0.82, 1, 1)
+light_color = Color(1, 0.94, 0.84, 1)
 light_energy = 0.75
 shadow_enabled = true
+shadow_opacity = 0.62
+shadow_blur = 1.5
 script = ExtResource("5_sun_light_test")
-day_duration_seconds = 60.0
-night_duration_seconds = 60.0
-minimum_elevation_degrees = 12.0
-maximum_elevation_degrees = 30.0
 
-[node name="WorkshopWarmLight" type="OmniLight3D" parent="Lighting"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6, 1.2)
-light_color = Color(1, 0.72, 0.46, 1)
-light_energy = 3.6
-omni_range = 13.0
-omni_attenuation = 0.65
+[node name="BoutiqueCenterLight" type="OmniLight3D" parent="Lighting" unique_id=1204767100]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5231962, 3.6, 4.066312)
+light_color = Color(0.88, 0.93, 1, 1)
+light_energy = 1.55
 shadow_enabled = true
+shadow_opacity = 0.5
+shadow_blur = 1.2
+omni_range = 9.0
+omni_attenuation = 1.1
+
+[node name="BoutiqueDisplayLeftLight" type="OmniLight3D" parent="Lighting" unique_id=766966672]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4682183, 3.15, -2.4)
+light_color = Color(0.86, 0.92, 1, 1)
+shadow_enabled = true
+shadow_opacity = 0.48
+shadow_blur = 1.1
+omni_range = 6.0
+omni_attenuation = 1.35
+
+[node name="BoutiqueDisplayRightLight" type="OmniLight3D" parent="Lighting" unique_id=186797293]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3037477, 3.15, -2.4)
+light_color = Color(0.86, 0.92, 1, 1)
+shadow_enabled = true
+shadow_opacity = 0.48
+shadow_blur = 1.1
+omni_range = 6.0
+omni_attenuation = 1.35
+
+[node name="BoutiqueWorkshopLight" type="OmniLight3D" parent="Lighting" unique_id=706361496]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.877639, 3.3, 4)
+light_color = Color(0.89, 0.94, 1, 1)
+light_energy = 1.05
+shadow_enabled = true
+shadow_opacity = 0.5
+shadow_blur = 1.2
+omni_range = 6.5
+omni_attenuation = 1.2
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Lighting" unique_id=528656849]
 environment = SubResource("StoreEnvironment")
@@ -242,17 +393,114 @@ script = ExtResource("2_camera_script")
 current = true
 fov = 55.0
 
-[node name="PlacementController" type="Node" parent="."]
+[node name="PlacementController" type="Node" parent="." unique_id=1795341803]
 script = ExtResource("16_placement_controller")
 camera_path = NodePath("../CameraRig/YawPivot/PitchPivot/Camera3D")
 installation_container_path = NodePath("../Architecture/PlacedFacadeItems")
 window_definition = ExtResource("14_window_definition")
-placement_collision_mask = 2
-daylight_source_path = NodePath("../Lighting/StreetWindowLight")
+default_window_paths = Array[NodePath]([NodePath(""), NodePath(""), NodePath(""), NodePath("")])
+
+[node name="FacilityPlacementController" type="Node" parent="." unique_id=1431373857]
+script = ExtResource("27_facility_controller")
+camera_path = NodePath("../CameraRig/YawPivot/PitchPivot/Camera3D")
+installation_container_path = NodePath("../Architecture/PlacedFacilities")
+facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition")])
+
+[node name="WatchDisplayController" type="Node" parent="." unique_id=1139365877]
+script = ExtResource("33_watch_display_controller")
+facility_controller_path = NodePath("../FacilityPlacementController")
+
+[node name="WatchDisplayPlacementController" type="Node" parent="."]
+script = ExtResource("35_display_placement_controller")
+camera_path = NodePath("../CameraRig/YawPivot/PitchPivot/Camera3D")
+facility_controller_path = NodePath("../FacilityPlacementController")
+
+[node name="Actors" type="Node3D" parent="." unique_id=1582541742]
+
+[node name="Watchmaker" parent="Actors" unique_id=64542918 instance=ExtResource("22_watchmaker")]
+
+[node name="Customer" parent="Actors" unique_id=1569264848 instance=ExtResource("24_customer")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.47, 0, -7.4)
+visitor_instance_id = "customer_practical"
+
+[node name="ClassicCustomer" parent="Actors" instance=ExtResource("24_customer")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.47, 0, -7.4)
+visitor_instance_id = "customer_classic"
+
+[node name="WorldClickController" type="Node" parent="." unique_id=588074296]
+script = ExtResource("23_world_click")
+camera_path = NodePath("../CameraRig/YawPivot/PitchPivot/Camera3D")
+watchmaker_path = NodePath("../Actors/Watchmaker")
+
+[node name="WatchDepositController" type="Node" parent="." unique_id=260622659]
+script = ExtResource("34_watch_deposit_controller")
+watchmaker_path = NodePath("../Actors/Watchmaker")
+
+[node name="VisitorNegotiationManager" type="Node" parent="."]
+script = ExtResource("36_visitor_negotiation_manager")
+customer_paths = [NodePath("../Actors/Customer"), NodePath("../Actors/ClassicCustomer")]
+watchmaker_path = NodePath("../Actors/Watchmaker")
 
 [node name="HudLayer" type="CanvasLayer" parent="." unique_id=2017863654]
 
-[node name="PlacementBar" type="PanelContainer" parent="HudLayer"]
+[node name="CommercePanel" parent="HudLayer" unique_id=1071854569 instance=ExtResource("31_commerce_panel")]
+unique_name_in_owner = true
+
+[node name="InventoryPanel" parent="HudLayer" unique_id=1071854570 instance=ExtResource("37_inventory_panel")]
+unique_name_in_owner = true
+
+[node name="VisitorNegotiationPanel" type="Control" parent="HudLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("41_visitor_negotiation_panel")
+
+[node name="CustomerAttentionCard" type="PanelContainer" parent="HudLayer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -336.0
+offset_top = 164.0
+offset_right = -16.0
+offset_bottom = 264.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("CustomerAttentionCard")
+
+[node name="Margin" type="MarginContainer" parent="HudLayer/CustomerAttentionCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="Column" type="VBoxContainer" parent="HudLayer/CustomerAttentionCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CustomerAttentionHeader" type="Label" parent="HudLayer/CustomerAttentionCard/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.3, 0.14, 1)
+theme_override_font_sizes/font_size = 11
+text = "PIENSA"
+
+[node name="CustomerAttentionMessage" type="Label" parent="HudLayer/CustomerAttentionCard/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.1, 0.085, 0.065, 1)
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 2
+vertical_alignment = 1
+
+[node name="PlacementBar" type="PanelContainer" parent="HudLayer" unique_id=1813185520]
 unique_name_in_owner = true
 visible = false
 offset_left = 290.0
@@ -261,11 +509,11 @@ offset_right = 990.0
 offset_bottom = 62.0
 theme_override_styles/panel = SubResource("PanelDark")
 
-[node name="PlacementRow" type="HBoxContainer" parent="HudLayer/PlacementBar"]
+[node name="PlacementRow" type="HBoxContainer" parent="HudLayer/PlacementBar" unique_id=1160793004]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="PlacementInstructionLabel" type="Label" parent="HudLayer/PlacementBar/PlacementRow"]
+[node name="PlacementInstructionLabel" type="Label" parent="HudLayer/PlacementBar/PlacementRow" unique_id=173983701]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -273,43 +521,57 @@ theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CancelPlacementButton" type="Button" parent="HudLayer/PlacementBar/PlacementRow"]
+[node name="CancelPlacementButton" type="Button" parent="HudLayer/PlacementBar/PlacementRow" unique_id=738152310]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(105, 0)
 layout_mode = 2
 theme_override_styles/normal = SubResource("ButtonLight")
 text = "Cancelar · Esc"
 
 [node name="BottomNav" type="PanelContainer" parent="HudLayer" unique_id=266331312]
-offset_top = 676.0
-offset_right = 1280.0
-offset_bottom = 720.0
-theme_override_styles/panel = SubResource("PanelDark")
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -88.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("BottomNavBase")
 
 [node name="BottomNavMargin" type="MarginContainer" parent="HudLayer/BottomNav" unique_id=435837156]
 layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 6
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
 
 [node name="BottomNavRow" type="HBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin" unique_id=1296372924]
 layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FinanceZone" type="HBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow"]
+custom_minimum_size = Vector2(328, 0)
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="MoneyPanel" type="PanelContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow" unique_id=1037795231]
-custom_minimum_size = Vector2(150, 32)
+[node name="MoneyPanel" type="PanelContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone" unique_id=1037795231]
+custom_minimum_size = Vector2(160, 56)
 layout_mode = 2
-theme_override_styles/panel = SubResource("PanelDark")
+theme_override_styles/panel = SubResource("BottomCard")
 
-[node name="MoneyMargin" type="MarginContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/MoneyPanel" unique_id=1013674677]
+[node name="MoneyMargin" type="MarginContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/MoneyPanel" unique_id=1013674677]
 layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 4
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
 
-[node name="MoneyLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/MoneyPanel/MoneyMargin" unique_id=938149827]
+[node name="FinanceColumn" type="VBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/MoneyPanel/MoneyMargin" unique_id=613181584]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="MoneyLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/MoneyPanel/MoneyMargin/FinanceColumn" unique_id=938149827]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 1)
@@ -318,16 +580,242 @@ text = "5.000 €"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="FurnitureButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow"]
+[node name="FinanceLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/MoneyPanel/MoneyMargin/FinanceColumn" unique_id=174194602]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-tooltip_text = "Mobiliario y ventanas"
-icon = ExtResource("12_furniture_icon")
-expand_icon = true
+theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 0.72)
+theme_override_font_sizes/font_size = 11
+text = "Próximo cierre: −1.600 € · 30 días"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="MoneyButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/MoneyPanel" unique_id=174194603]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Abrir tesorería y desglose económico"
+flat = true
+
+[node name="ReputationButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+tooltip_text = "Abrir reputación y reseñas de clientes"
+theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 1)
+theme_override_styles/normal = SubResource("BottomCard")
+text = ""
+
+[node name="ReputationContent" type="VBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 6.0
+offset_right = -10.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="ReputationStarsLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.72, 0.32, 1)
+theme_override_font_sizes/font_size = 13
+text = "REPUTACIÓN\n☆☆☆☆☆"
+horizontal_alignment = 0
+
+[node name="ReputationProgress" type="ProgressBar" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+mouse_filter = 2
+max_value = 5.0
+show_percentage = false
+value = 0.0
+theme_override_styles/background = SubResource("ReputationProgressBackground")
+theme_override_styles/fill = SubResource("ReputationProgressFill")
+
+[node name="NavigationZone" type="HBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 6
+
+[node name="FurnitureButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone" unique_id=1288991338]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 56)
+layout_mode = 2
+tooltip_text = "Mobiliario"
+theme_override_colors/font_color = Color(0.12, 0.09, 0.06, 1)
 theme_override_styles/normal = SubResource("ButtonLight")
+text = ""
+
+[node name="FacilitiesButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone" unique_id=177008757]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 56)
+layout_mode = 2
+tooltip_text = "Abrir equipamiento de tienda"
+theme_override_colors/font_color = Color(0.12, 0.09, 0.06, 1)
+theme_override_styles/normal = SubResource("ButtonLight")
+text = ""
+
+[node name="AuctionButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone" unique_id=312851336]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 56)
+layout_mode = 2
+tooltip_text = "Abrir pujas del Salón de Lotes"
+theme_override_colors/font_color = Color(0.12, 0.09, 0.06, 1)
+theme_override_colors/font_disabled_color = Color(0.68, 0.68, 0.65, 1)
+theme_override_styles/normal = SubResource("ButtonLight")
+theme_override_styles/disabled = SubResource("ButtonDisabled")
+text = ""
+
+[node name="InventoryButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone" unique_id=312851337]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 56)
+layout_mode = 2
+tooltip_text = "Abrir inventario y vitrina"
+theme_override_colors/font_color = Color(0.12, 0.09, 0.06, 1)
+theme_override_colors/font_disabled_color = Color(0.68, 0.68, 0.65, 1)
+theme_override_styles/normal = SubResource("ButtonLight")
+theme_override_styles/disabled = SubResource("ButtonDisabled")
+text = ""
+
+[node name="FurnitureIcon" type="TextureRect" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone/FurnitureButton"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 7.0
+offset_bottom = 31.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("12_furniture_icon")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.12, 0.09, 0.06, 1)
+
+[node name="Label" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone/FurnitureButton"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -22.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.12, 0.09, 0.06, 1)
+theme_override_font_sizes/font_size = 11
+text = "Muebles"
+horizontal_alignment = 1
+
+[node name="FacilitiesIcon" type="TextureRect" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone/FacilitiesButton"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 7.0
+offset_bottom = 31.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("25_facilities_icon")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.12, 0.09, 0.06, 1)
+
+[node name="Label" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone/FacilitiesButton"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -22.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.12, 0.09, 0.06, 1)
+theme_override_font_sizes/font_size = 11
+text = "Equipo"
+horizontal_alignment = 1
+
+[node name="AuctionIcon" type="TextureRect" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone/AuctionButton"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 7.0
+offset_bottom = 31.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("38_auction_icon")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.12, 0.09, 0.06, 1)
+
+[node name="Label" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone/AuctionButton"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -22.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.12, 0.09, 0.06, 1)
+theme_override_font_sizes/font_size = 11
+text = "Pujas"
+horizontal_alignment = 1
+
+[node name="InventoryIcon" type="TextureRect" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone/InventoryButton"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 7.0
+offset_bottom = 31.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("39_inventory_icon")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.12, 0.09, 0.06, 1)
+
+[node name="Label" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/NavigationZone/InventoryButton"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -22.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.12, 0.09, 0.06, 1)
+theme_override_font_sizes/font_size = 11
+text = "Inventario"
+horizontal_alignment = 1
+
+[node name="RightZone" type="HBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TimePanel" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/RightZone" unique_id=1071854568 instance=ExtResource("17_time_panel")]
+
+[node name="GameMenuButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/RightZone" unique_id=1751064378]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 56)
+layout_mode = 2
+tooltip_text = "Abrir menú (Esc)"
+theme_override_styles/normal = SubResource("ButtonLight")
+icon = ExtResource("40_settings_icon")
+expand_icon = true
 
 [node name="HintLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow" unique_id=875355709]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 0.82)
@@ -336,114 +824,128 @@ text = "WASD mover · Click derecho rotar · Rueda zoom"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="FurniturePanel" type="PanelContainer" parent="HudLayer"]
+[node name="FurniturePanel" type="PanelContainer" parent="HudLayer" unique_id=612400017]
 unique_name_in_owner = true
 visible = false
 offset_left = 86.0
-offset_top = 350.0
-offset_right = 560.0
+offset_top = 320.0
+offset_right = 806.0
 offset_bottom = 650.0
 theme_override_styles/panel = SubResource("PanelCream")
 
-[node name="FurnitureMargin" type="MarginContainer" parent="HudLayer/FurniturePanel"]
+[node name="FurnitureMargin" type="MarginContainer" parent="HudLayer/FurniturePanel" unique_id=997515663]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 14
 
-[node name="FurnitureColumn" type="VBoxContainer" parent="HudLayer/FurniturePanel/FurnitureMargin"]
+[node name="FurnitureColumn" type="VBoxContainer" parent="HudLayer/FurniturePanel/FurnitureMargin" unique_id=1108327435]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="FurnitureTitle" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
+[node name="FurnitureTitle" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn" unique_id=1356204903]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
 theme_override_font_sizes/font_size = 22
 text = "Mobiliario"
 
-[node name="WindowFilter" type="Button" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
-custom_minimum_size = Vector2(0, 34)
+[node name="FurnitureCatalogScroll" type="ScrollContainer" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn" unique_id=1059350502]
+custom_minimum_size = Vector2(0, 254)
 layout_mode = 2
-disabled = true
-tooltip_text = "Filtro activo: Ventanas"
-theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
-theme_override_styles/disabled = SubResource("ButtonLight")
-icon = ExtResource("13_window_icon")
-expand_icon = true
-text = "Ventanas"
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
-[node name="WindowCard" type="VBoxContainer" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="WindowName" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn/WindowCard"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
-theme_override_font_sizes/font_size = 18
-text = "Ventana de madera y cristal"
-
-[node name="WindowDescription" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn/WindowCard"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
-text = "Aporta luz natural con un acabado cálido de madera y cristal."
-autowrap_mode = 3
-
-[node name="WindowCompatibility" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn/WindowCard"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
-text = "Compatible con: paredes interiores"
-
-[node name="BuyWindowButton" type="Button" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 36)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
-theme_override_styles/normal = SubResource("ButtonLight")
-theme_override_styles/disabled = SubResource("PanelDark")
-text = "Comprar y colocar · 650 €"
-
-[node name="FurnitureStatusLabel" type="Label" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn"]
+[node name="FurnitureGrid" type="GridContainer" parent="HudLayer/FurniturePanel/FurnitureMargin/FurnitureColumn/FurnitureCatalogScroll" unique_id=274280447]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
-text = "Selecciona una ventana para colocarla sobre una pared interior."
-autowrap_mode = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 3
 
-[node name="WindowContextPanel" type="PanelContainer" parent="HudLayer"]
+[node name="FacilitiesPanel" type="PanelContainer" parent="HudLayer" unique_id=1124047140]
+unique_name_in_owner = true
+visible = false
+offset_left = 86.0
+offset_top = 320.0
+offset_right = 806.0
+offset_bottom = 650.0
+theme_override_styles/panel = SubResource("PanelCream")
+
+[node name="FacilitiesMargin" type="MarginContainer" parent="HudLayer/FacilitiesPanel" unique_id=1041873898]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="FacilitiesColumn" type="VBoxContainer" parent="HudLayer/FacilitiesPanel/FacilitiesMargin" unique_id=944050821]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FacilitiesTitle" type="Label" parent="HudLayer/FacilitiesPanel/FacilitiesMargin/FacilitiesColumn" unique_id=987210317]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_font_sizes/font_size = 22
+text = "Equipamiento de tienda"
+
+[node name="FacilitiesCatalogScroll" type="ScrollContainer" parent="HudLayer/FacilitiesPanel/FacilitiesMargin/FacilitiesColumn" unique_id=2096176550]
+custom_minimum_size = Vector2(0, 254)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="FacilitiesGrid" type="GridContainer" parent="HudLayer/FacilitiesPanel/FacilitiesMargin/FacilitiesColumn/FacilitiesCatalogScroll" unique_id=1928073931]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 3
+
+[node name="WindowContextPanel" type="PanelContainer" parent="HudLayer" unique_id=2020019817]
 unique_name_in_owner = true
 visible = false
 offset_left = 18.0
 offset_top = 92.0
 offset_right = 190.0
 offset_bottom = 184.0
-theme_override_styles/panel = SubResource("PanelDark")
+theme_override_styles/panel = SubResource("PanelSelection")
 
-[node name="Margin" type="MarginContainer" parent="HudLayer/WindowContextPanel"]
+[node name="Margin" type="MarginContainer" parent="HudLayer/WindowContextPanel" unique_id=1279356420]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="Column" type="VBoxContainer" parent="HudLayer/WindowContextPanel/Margin"]
+[node name="Column" type="VBoxContainer" parent="HudLayer/WindowContextPanel/Margin" unique_id=1039605189]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="HudLayer/WindowContextPanel/Margin/Column"]
+[node name="Title" type="Label" parent="HudLayer/WindowContextPanel/Margin/Column" unique_id=2114001051]
 layout_mode = 2
-text = "Ventana instalada"
+text = "Ventana seleccionada"
 
-[node name="MoveWindowButton" type="Button" parent="HudLayer/WindowContextPanel/Margin/Column"]
+[node name="Actions" type="HBoxContainer" parent="HudLayer/WindowContextPanel/Margin/Column" unique_id=491753271]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MoveWindowButton" type="Button" parent="HudLayer/WindowContextPanel/Margin/Column/Actions" unique_id=947742951]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
-text = "Mover"
+tooltip_text = "Mover ventana"
+icon = ExtResource("21_move_icon")
+expand_icon = true
 
-[node name="DemolishWindowButton" type="Button" parent="HudLayer/WindowContextPanel/Margin/Column"]
+[node name="DemolishWindowButton" type="Button" parent="HudLayer/WindowContextPanel/Margin/Column/Actions" unique_id=1691216775]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
-text = "Demoler"
+tooltip_text = "Demoler instalación"
+icon = ExtResource("29_demolish_icon")
+expand_icon = true
 
-[node name="DemolitionConfirmPanel" type="PanelContainer" parent="HudLayer"]
+[node name="DemolitionConfirmPanel" type="PanelContainer" parent="HudLayer" unique_id=871431970]
 unique_name_in_owner = true
 visible = false
 offset_left = 202.0
@@ -452,93 +954,321 @@ offset_right = 450.0
 offset_bottom = 184.0
 theme_override_styles/panel = SubResource("PanelCream")
 
-[node name="Margin" type="MarginContainer" parent="HudLayer/DemolitionConfirmPanel"]
+[node name="Margin" type="MarginContainer" parent="HudLayer/DemolitionConfirmPanel" unique_id=613933224]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="Column" type="VBoxContainer" parent="HudLayer/DemolitionConfirmPanel/Margin"]
+[node name="Column" type="VBoxContainer" parent="HudLayer/DemolitionConfirmPanel/Margin" unique_id=304124651]
 layout_mode = 2
 
-[node name="Text" type="Label" parent="HudLayer/DemolitionConfirmPanel/Margin/Column"]
+[node name="Text" type="Label" parent="HudLayer/DemolitionConfirmPanel/Margin/Column" unique_id=1829978396]
 layout_mode = 2
 text = "¿Demoler? Reembolso: 80 %"
 
-[node name="Actions" type="HBoxContainer" parent="HudLayer/DemolitionConfirmPanel/Margin/Column"]
+[node name="Actions" type="HBoxContainer" parent="HudLayer/DemolitionConfirmPanel/Margin/Column" unique_id=1242616757]
 layout_mode = 2
 
-[node name="ConfirmDemolishButton" type="Button" parent="HudLayer/DemolitionConfirmPanel/Margin/Column/Actions"]
+[node name="ConfirmDemolishButton" type="Button" parent="HudLayer/DemolitionConfirmPanel/Margin/Column/Actions" unique_id=1344164088]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Confirmar"
 
-[node name="CancelDemolishButton" type="Button" parent="HudLayer/DemolitionConfirmPanel/Margin/Column/Actions"]
+[node name="CancelDemolishButton" type="Button" parent="HudLayer/DemolitionConfirmPanel/Margin/Column/Actions" unique_id=1136413995]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Cancelar"
 
-[node name="WallPalettePanel" type="PanelContainer" parent="HudLayer"]
+[node name="WallPalettePanel" type="PanelContainer" parent="HudLayer" unique_id=1803377474]
 unique_name_in_owner = true
 visible = false
 offset_left = 18.0
 offset_top = 92.0
-offset_right = 340.0
-offset_bottom = 232.0
+offset_right = 70.0
+offset_bottom = 144.0
 theme_override_styles/panel = SubResource("PanelDark")
 
-[node name="Margin" type="MarginContainer" parent="HudLayer/WallPalettePanel"]
+[node name="Margin" type="MarginContainer" parent="HudLayer/WallPalettePanel" unique_id=571571163]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="Column" type="VBoxContainer" parent="HudLayer/WallPalettePanel/Margin"]
+[node name="Column" type="VBoxContainer" parent="HudLayer/WallPalettePanel/Margin" unique_id=679418798]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="HudLayer/WallPalettePanel/Margin/Column"]
+[node name="PaletteButton" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column" unique_id=394831355]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+tooltip_text = "Cambiar color de pared"
+icon = ExtResource("20_palette_icon")
+expand_icon = true
+
+[node name="FinishOptions" type="VBoxContainer" parent="HudLayer/WallPalettePanel/Margin/Column" unique_id=2138562415]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Title" type="Label" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions" unique_id=565193303]
 layout_mode = 2
 text = "Acabado de pared · gratuito"
 
-[node name="Finishes" type="HBoxContainer" parent="HudLayer/WallPalettePanel/Margin/Column"]
+[node name="Finishes" type="HBoxContainer" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions" unique_id=601410871]
 layout_mode = 2
 
-[node name="Ivory" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+[node name="Ivory" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" unique_id=609450543 groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-text = "Marfil"
+theme_override_styles/normal = SubResource("SwatchIvory")
 metadata/finish_id = "ivory"
 
-[node name="Graphite" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+[node name="Graphite" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" unique_id=319031069 groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-text = "Grafito"
+theme_override_styles/normal = SubResource("SwatchGraphite")
 metadata/finish_id = "graphite"
 
-[node name="DeepGreen" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+[node name="DeepGreen" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" unique_id=1183179463 groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-text = "Verde"
+theme_override_styles/normal = SubResource("SwatchDeepGreen")
 metadata/finish_id = "deep_green"
 
-[node name="NightBlue" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+[node name="NightBlue" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" unique_id=408114128 groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-text = "Azul noche"
+theme_override_styles/normal = SubResource("SwatchNightBlue")
 metadata/finish_id = "night_blue"
 
-[node name="Steel" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Finishes" groups=["wall_finish_buttons"]]
+[node name="Steel" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" unique_id=1973684840 groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-text = "Acero"
+theme_override_styles/normal = SubResource("SwatchSteel")
 metadata/finish_id = "steel"
 
-[node name="Actions" type="HBoxContainer" parent="HudLayer/WallPalettePanel/Margin/Column"]
+[node name="Sand" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Arena"
+theme_override_styles/normal = SubResource("SwatchSand")
+metadata/finish_id = "sand"
+
+[node name="Terracotta" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Terracota"
+theme_override_styles/normal = SubResource("SwatchTerracotta")
+metadata/finish_id = "terracotta"
+
+[node name="Burgundy" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Burdeos"
+theme_override_styles/normal = SubResource("SwatchBurgundy")
+metadata/finish_id = "burgundy"
+
+[node name="Sage" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Verde salvia"
+theme_override_styles/normal = SubResource("SwatchSage")
+metadata/finish_id = "sage"
+
+[node name="Petrol" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Azul petróleo"
+theme_override_styles/normal = SubResource("SwatchPetrol")
+metadata/finish_id = "petrol"
+
+[node name="Plum" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishOptions/Finishes" groups=["wall_finish_buttons"]]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Ciruela"
+theme_override_styles/normal = SubResource("SwatchPlum")
+metadata/finish_id = "plum"
+
+[node name="FinishActions" type="HBoxContainer" parent="HudLayer/WallPalettePanel/Margin/Column" unique_id=2062024237]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 
-[node name="ApplyFinishButton" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Actions"]
+[node name="ApplyFinishButton" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishActions" unique_id=902306679]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Aplicar"
 
-[node name="CancelFinishButton" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/Actions"]
+[node name="CancelFinishButton" type="Button" parent="HudLayer/WallPalettePanel/Margin/Column/FinishActions" unique_id=1784346304]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Cancelar"
+
+[node name="GameMenuOverlay" type="Control" parent="HudLayer" unique_id=2128776003]
+unique_name_in_owner = true
+process_mode = 3
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="HudLayer/GameMenuOverlay" unique_id=811732714]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.015, 0.012, 0.01, 0.7)
+
+[node name="MenuPanel" type="PanelContainer" parent="HudLayer/GameMenuOverlay" unique_id=699702219]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -190.0
+offset_top = -165.0
+offset_right = 190.0
+offset_bottom = 165.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("PanelCream")
+
+[node name="Margin" type="MarginContainer" parent="HudLayer/GameMenuOverlay/MenuPanel" unique_id=1051806709]
+layout_mode = 2
+theme_override_constants/margin_left = 26
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_bottom = 24
+
+[node name="Column" type="VBoxContainer" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin" unique_id=1227981411]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin/Column" unique_id=332134120]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_font_sizes/font_size = 26
+text = "Menú de partida"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin/Column" unique_id=301241772]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 0.82)
+text = "El tiempo está en pausa."
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin/Column" unique_id=1175119841]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 1)
+theme_override_styles/normal = SubResource("ButtonBlack")
+text = "Reanudar"
+
+[node name="LanguageLabel" type="Label" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin/Column"]
+layout_mode = 2
+text = "Idioma"
+
+[node name="LanguageOption" type="OptionButton" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin/Column" unique_id=140866201]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+
+[node name="RestartButton" type="Button" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin/Column" unique_id=756439180]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 1)
+theme_override_styles/normal = SubResource("ButtonBlack")
+text = "Reiniciar partida"
+
+[node name="RestartConfirmation" type="Control" parent="HudLayer/GameMenuOverlay" unique_id=1195698465]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="HudLayer/GameMenuOverlay/RestartConfirmation" unique_id=1539238378]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.01, 0.008, 0.006, 0.52)
+
+[node name="ConfirmPanel" type="PanelContainer" parent="HudLayer/GameMenuOverlay/RestartConfirmation" unique_id=752526625]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -115.0
+offset_right = 230.0
+offset_bottom = 115.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="Margin" type="MarginContainer" parent="HudLayer/GameMenuOverlay/RestartConfirmation/ConfirmPanel" unique_id=138623209]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="Column" type="VBoxContainer" parent="HudLayer/GameMenuOverlay/RestartConfirmation/ConfirmPanel/Margin" unique_id=2008643101]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="HudLayer/GameMenuOverlay/RestartConfirmation/ConfirmPanel/Margin/Column" unique_id=2034176302]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 1)
+theme_override_font_sizes/font_size = 22
+text = "¿Reiniciar la partida?"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="HudLayer/GameMenuOverlay/RestartConfirmation/ConfirmPanel/Margin/Column" unique_id=992712043]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 0.8)
+text = "Se perderá todo el progreso guardado."
+horizontal_alignment = 1
+
+[node name="Actions" type="HBoxContainer" parent="HudLayer/GameMenuOverlay/RestartConfirmation/ConfirmPanel/Margin/Column" unique_id=171413623]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="CancelRestartButton" type="Button" parent="HudLayer/GameMenuOverlay/RestartConfirmation/ConfirmPanel/Margin/Column/Actions" unique_id=703536511]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+text = "Cancelar"
+
+[node name="ConfirmRestartButton" type="Button" parent="HudLayer/GameMenuOverlay/RestartConfirmation/ConfirmPanel/Margin/Column/Actions" unique_id=66027697]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_colors/font_hover_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_colors/font_pressed_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.137255, 0.105882, 0.0784314, 1)
+theme_override_styles/normal = SubResource("ButtonLight")
+text = "Sí, reiniciar"

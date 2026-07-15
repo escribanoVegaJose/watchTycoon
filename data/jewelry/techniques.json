@@ -1,0 +1,14 @@
+{
+  "techniques": [
+    { "id": "pave_setting", "label": "Engaste pavé" },
+    { "id": "folded_metal", "label": "Metal plegado" },
+    { "id": "relief_chasing", "label": "Cincelado en relieve" },
+    { "id": "filigree", "label": "Filigrana" },
+    { "id": "mixed_stone_setting", "label": "Engaste mixto" },
+    { "id": "chain_linking", "label": "Engarce en cadena" },
+    { "id": "enamel_inlay", "label": "Esmalte incrustado" },
+    { "id": "botanical_setting", "label": "Engaste botánico" },
+    { "id": "wire_wrapping", "label": "Enrollado de hilo metálico" },
+    { "id": "legacy_unspecified", "label": "Técnica sin catalogar" }
+  ]
+}
