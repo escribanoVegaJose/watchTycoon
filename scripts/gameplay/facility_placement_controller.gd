@@ -206,7 +206,7 @@ func _render_installation(installation: Dictionary) -> void:
 		visual.add_to_group("world_selectable_facility")
 		if definition.item_id == GameState.POINT_OF_SALE_FACILITY_ID:
 			visual.add_to_group("point_of_sale_counter")
-		elif definition.item_id == "display_counter_01":
+		elif definition.is_display_facility():
 			visual.add_to_group("customer_display_counter")
 		visual.set_meta("selection_id", installation_id)
 		visual.set_meta("facility_visual_scale", definition.visual_scale)

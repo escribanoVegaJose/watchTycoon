@@ -15,3 +15,28 @@ visual_scene = ExtResource("2_visual")
 visual_scale = Vector3(2.4, 2.4, 2.4)
 floor_offset = 0.577
 footprint_half_extents = Vector2(2.3, 0.5)
+display_slots = Array[Dictionary]([{
+"slot_id": "display_counter_01_slot_01",
+"position": Vector3(-0.8125, 0.286, 0),
+"scale": Vector3(1, 1, 1)
+}, {
+"slot_id": "display_counter_01_slot_02",
+"position": Vector3(-0.4875, 0.286, 0),
+"scale": Vector3(1, 1, 1)
+}, {
+"slot_id": "display_counter_01_slot_03",
+"position": Vector3(-0.1625, 0.286, 0),
+"scale": Vector3(1, 1, 1)
+}, {
+"slot_id": "display_counter_01_slot_04",
+"position": Vector3(0.1625, 0.286, 0),
+"scale": Vector3(1, 1, 1)
+}, {
+"slot_id": "display_counter_01_slot_05",
+"position": Vector3(0.4875, 0.286, 0),
+"scale": Vector3(1, 1, 1)
+}, {
+"slot_id": "display_counter_01_slot_06",
+"position": Vector3(0.8125, 0.286, 0),
+"scale": Vector3(1, 1, 1)
+}])

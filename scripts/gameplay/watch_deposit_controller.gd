@@ -31,7 +31,7 @@ func _nearest_display_counter_id() -> String:
 	var closest_id := ""
 	var closest_distance := deposit_distance * deposit_distance
 	for installation in GameState.get_facility_installations():
-		if String(installation.get("item_id", "")) != "display_counter_01":
+		if not GameState.is_display_facility(String(installation.get("installation_id", ""))):
 			continue
 		var transform_data: Dictionary = installation.get("transform", {})
 		var origin: Variant = transform_data.get("origin", [])

@@ -8,18 +8,6 @@ const ItemModelFraming = preload("res://scripts/presentation/item_model_framing.
 var _galleries: Dictionary = {}
 var _price_chips: Array[Node3D] = []
 const WATCH_SELECTION_MASK := 64
-# Single source of truth for the six physical positions on display_counter_01.
-# Placement markers use this same table so their selectable targets always match
-# the rendered pieces.
-const DISPLAY_COUNTER_01_SLOT_POSITIONS := [
-	Vector3(-0.8125, 0.286, 0.0),
-	Vector3(-0.4875, 0.286, 0.0),
-	Vector3(-0.1625, 0.286, 0.0),
-	Vector3(0.1625, 0.286, 0.0),
-	Vector3(0.4875, 0.286, 0.0),
-	Vector3(0.8125, 0.286, 0.0),
-]
-
 func _ready() -> void:
 	EventBus.watch_display_changed.connect(_on_display_changed)
 	EventBus.visitor_negotiation_changed.connect(_on_visitor_negotiation_changed)
@@ -67,7 +55,8 @@ func _add_watch(entry: Dictionary) -> void:
 	var slot := int(entry.get("slot_index", 0))
 	var root := Node3D.new()
 	root.name = "DisplayedWatch_%s" % String(entry.get("unit_id", ""))
-	root.position = get_slot_local_position(slot)
+	root.position = Vector3(GameState.get_display_slot(facility_id, slot).get("position", Vector3.ZERO))
+	root.scale = Vector3(GameState.get_display_slot(facility_id, slot).get("scale", Vector3.ONE))
 	root.rotation.y = float(entry.get("rotation_y", 0.0))
 	root.add_to_group("world_selectable_displayed_watch")
 	root.set_meta("selection_id", String(entry.get("unit_id", "")))
@@ -143,9 +132,6 @@ func _add_selection_collider(root: Node3D, entry: Dictionary) -> void:
 	collision.shape = shape
 	body.add_child(collision)
 	root.add_child(body)
-
-static func get_slot_local_position(slot: int) -> Vector3:
-	return DISPLAY_COUNTER_01_SLOT_POSITIONS[slot] if slot >= 0 and slot < DISPLAY_COUNTER_01_SLOT_POSITIONS.size() else Vector3.ZERO
 
 func _piece_for_unit(unit_id: String) -> Dictionary:
 	for piece in GameState.listed_pieces:

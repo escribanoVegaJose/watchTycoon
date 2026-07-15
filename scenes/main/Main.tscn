@@ -24,6 +24,7 @@
 [ext_resource type="Script" uid="uid://dk55n3smfeikw" path="res://scripts/gameplay/facility_definition.gd" id="28_facility_definition"]
 [ext_resource type="Texture2D" uid="uid://c1l4k1p7fppea" path="res://assets/icons/demolish.svg" id="29_demolish_icon"]
 [ext_resource type="Resource" path="res://data/facilities/display_counter_01.tres" id="30_display_counter_definition"]
+[ext_resource type="Resource" path="res://data/facilities/display_case_glass_vertical_01.tres" id="43_display_case_definition"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CommercePanel.tscn" id="31_commerce_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/InventoryPanel.tscn" id="37_inventory_panel"]
 [ext_resource type="Script" uid="uid://cn3uhlu6yb3qq" path="res://scripts/gameplay/world_selection_highlight.gd" id="32_selection_highlight"]
@@ -36,6 +37,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/settings.svg" id="40_settings_icon"]
 [ext_resource type="Script" path="res://scripts/ui/visitor_negotiation_panel.gd" id="41_visitor_negotiation_panel"]
 [ext_resource type="Script" path="res://scripts/presentation/doorbell_presenter.gd" id="42_doorbell_presenter"]
+[ext_resource type="Script" path="res://scripts/ui/reputation_global_ring.gd" id="43_reputation_ring"]
 [ext_resource type="PackedScene" path="res://scenes/ui/AuctionActiveBidsHud.tscn" id="42_active_bids_hud"]
 
 [sub_resource type="BoxMesh" id="FloorMesh"]
@@ -246,7 +248,7 @@ corner_radius_bottom_left = 8
 [node name="Main" type="Node3D" unique_id=2055157705]
 script = ExtResource("1_main_script")
 furniture_definitions = Array[ExtResource("7_hjnkw")]([ExtResource("14_window_definition")])
-facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition")])
+facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition"), ExtResource("43_display_case_definition")])
 
 [node name="Architecture" type="Node3D" parent="." unique_id=1586308290]
 
@@ -406,7 +408,7 @@ default_window_paths = Array[NodePath]([NodePath(""), NodePath(""), NodePath("")
 script = ExtResource("27_facility_controller")
 camera_path = NodePath("../CameraRig/YawPivot/PitchPivot/Camera3D")
 installation_container_path = NodePath("../Architecture/PlacedFacilities")
-facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition")])
+facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition"), ExtResource("43_display_case_definition")])
 
 [node name="WatchDisplayController" type="Node" parent="." unique_id=1139365877]
 script = ExtResource("33_watch_display_controller")
@@ -473,9 +475,9 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -336.0
-offset_top = 164.0
+offset_top = 320.0
 offset_right = -16.0
-offset_bottom = 264.0
+offset_bottom = 420.0
 grow_horizontal = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("CustomerAttentionCard")
@@ -558,7 +560,7 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="FinanceZone" type="HBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow"]
-custom_minimum_size = Vector2(328, 0)
+custom_minimum_size = Vector2(388, 0)
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -604,14 +606,14 @@ flat = true
 
 [node name="ReputationButton" type="Button" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 56)
+custom_minimum_size = Vector2(220, 56)
 layout_mode = 2
 tooltip_text = "Abrir reputación y reseñas de clientes"
 theme_override_colors/font_color = Color(0.964706, 0.933333, 0.858824, 1)
 theme_override_styles/normal = SubResource("BottomCard")
 text = ""
 
-[node name="ReputationContent" type="VBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton"]
+[node name="ReputationContent" type="HBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -623,17 +625,22 @@ offset_bottom = -6.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="CustomerRatingBlock" type="VBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
-[node name="ReputationStarsLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent"]
+[node name="ReputationStarsLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent/CustomerRatingBlock"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92, 0.72, 0.32, 1)
 theme_override_font_sizes/font_size = 13
-text = "REPUTACIÓN\n☆☆☆☆☆"
+text = "CLIENTES\n☆☆☆☆☆"
 horizontal_alignment = 0
 
-[node name="ReputationProgress" type="ProgressBar" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent"]
+[node name="ReputationProgress" type="ProgressBar" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent/CustomerRatingBlock"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
@@ -643,6 +650,51 @@ show_percentage = false
 value = 0.0
 theme_override_styles/background = SubResource("ReputationProgressBackground")
 theme_override_styles/fill = SubResource("ReputationProgressFill")
+
+[node name="GlobalReputationBlock" type="VBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent"]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="GlobalReputationRing" type="Control" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent/GlobalReputationBlock"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 38)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("43_reputation_ring")
+
+[node name="GlobalReputationValue" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent/GlobalReputationBlock/GlobalReputationRing"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GlobalReputationUnit" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent/GlobalReputationBlock"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.82, 0.63, 0.29, 1)
+theme_override_font_sizes/font_size = 9
+text = "REP."
+horizontal_alignment = 1
+
+[node name="NextVisitorLabel" type="Label" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow/FinanceZone/ReputationButton/ReputationContent/GlobalReputationBlock"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.96, 0.91, 0.8, 0.72)
+theme_override_font_sizes/font_size = 9
+text = "Próximo · 1"
+horizontal_alignment = 1
 
 [node name="NavigationZone" type="HBoxContainer" parent="HudLayer/BottomNav/BottomNavMargin/BottomNavRow"]
 layout_mode = 2
@@ -1190,12 +1242,6 @@ text = "Idioma"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-
-[node name="MusicMuteButton" type="Button" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin/Column" unique_id=140866202]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
-text = "🔊 Música"
 
 [node name="MusicVolumeLabel" type="Label" parent="HudLayer/GameMenuOverlay/MenuPanel/Margin/Column"]
 layout_mode = 2

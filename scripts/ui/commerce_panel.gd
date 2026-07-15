@@ -424,7 +424,7 @@ func _make_auction_card(snapshot: Dictionary) -> PanelContainer:
 	# Match the native Button rect to the full visual CTA height. The grid may
 	# give cards additional vertical space, but it must never stretch the drawn
 	# CTA beyond this actual Godot input rect.
-	bid.custom_minimum_size = Vector2(0, 60)
+	bid.custom_minimum_size = Vector2(0, 42)
 	bid.size_flags_vertical = Control.SIZE_SHRINK_END
 	bid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bid.pressed.connect(_place_bid.bind(String(snapshot.get("instance_id", ""))))
@@ -1010,8 +1010,8 @@ func _configure_bid_cta(button: Button) -> void:
 	# Keep the bid interaction visually distinct from secondary panel controls.
 	# The existing auction icon already uses a dark stroke, matching this CTA.
 	button.icon = AUCTION_ICON
-	button.expand_icon = true
-	button.custom_minimum_size = Vector2(0, 42)
+	button.expand_icon = false
+	button.custom_minimum_size = Vector2(0, 36)
 	button.add_theme_font_size_override("font_size", 14)
 	button.add_theme_color_override("font_color", Color(0.10, 0.085, 0.06))
 	button.add_theme_color_override("font_hover_color", Color(0.075, 0.06, 0.04))

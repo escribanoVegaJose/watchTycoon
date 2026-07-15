@@ -11,6 +11,7 @@ var _arrived_at_counter: Dictionary = {}
 var _next_practical_attempt := 0.0
 var _departing_customer_ids: Dictionary = {}
 var _negotiation_panel: VisitorNegotiationPanel
+var _waiting_browse_customer: CustomerVisitor
 
 func _ready() -> void:
 	add_to_group("visitor_negotiation_manager")
@@ -35,7 +36,7 @@ func _ready() -> void:
 func _try_start_pair() -> void:
 	# A scheduled attempt never joins a partial queue or reuses a body that is
 	# still walking out after a sale. This keeps the two visual slots authoritative.
-	if not GameState.can_access_commerce() or customers.is_empty() or not GameState.get_visitor_negotiations().is_empty() or not _departing_customer_ids.is_empty():
+	if not GameState.can_access_commerce() or customers.is_empty() or not GameState.get_visitor_negotiations().is_empty() or _waiting_browse_customer != null or not _departing_customer_ids.is_empty():
 		return
 	var negotiations: Array[Dictionary] = []
 	var selected_unit_ids: Dictionary = {}
@@ -56,8 +57,10 @@ func _try_start_pair() -> void:
 			GameState.last_collector_spawn_day = GameState.current_day
 	if negotiations.is_empty():
 		if not customers.is_empty() and not customers[0].is_leaving_store():
-			customers[0].begin_browse_visit()
-		EventBus.feedback_requested.emit("Un cliente ha entrado a explorar la boutique.", "info")
+			_waiting_browse_customer = customers[0]
+			EventBus.visitor_doorbell_requested.emit()
+			_waiting_browse_customer.begin_waiting_to_browse()
+		EventBus.feedback_requested.emit("Ha sonado el timbre: abre la puerta para dejar pasar al cliente.", "info")
 		return
 	GameState.set_visitor_negotiations(negotiations)
 	_start_physical_visits()
@@ -122,12 +125,21 @@ func admit_next_waiting_visitor() -> void:
 		var watch := _watch_for_unit(String(negotiations[index].get("unit_id", "")))
 		if customer == null or display.is_empty() or watch.is_empty():
 			return
+		if not customer.begin_purchase_visit(display, String(watch.get("name", "Pieza expuesta")), index, String(negotiations[index].get("customer_name", ""))):
+			EventBus.feedback_requested.emit("La vitrina no está disponible todavía.", "error")
+			return
 		negotiations[index]["state"] = "entering"
 		GameState.set_visitor_negotiations(negotiations)
-		customer.begin_purchase_visit(display, String(watch.get("name", "Pieza expuesta")), index, String(negotiations[index].get("customer_name", "")))
 		EventBus.feedback_requested.emit("Has abierto la puerta. El cliente entra en la boutique.", "info")
 		_publish_active()
 		return
+	if _waiting_browse_customer != null and is_instance_valid(_waiting_browse_customer) and _waiting_browse_customer.is_waiting_outside():
+		_waiting_browse_customer.begin_browse_visit()
+		_waiting_browse_customer = null
+		EventBus.feedback_requested.emit("Has abierto la puerta. El cliente entra a explorar la boutique.", "info")
+
+func has_waiting_browse_visitor() -> bool:
+	return _waiting_browse_customer != null and is_instance_valid(_waiting_browse_customer) and _waiting_browse_customer.is_waiting_outside()
 
 
 func _process(delta: float) -> void:

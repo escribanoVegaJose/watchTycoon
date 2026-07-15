@@ -20,9 +20,14 @@ var carried_watch: Dictionary = {}
 ## Immutable acquisition records plus the single physical display slot.
 var purchase_history: Array[Dictionary] = []
 var displayed_watch: Dictionary = {}
-## Each display counter has six independently priced physical slots.
+## Each display facility has independently priced physical slots.
 var displayed_watches: Array[Dictionary] = []
+## Legacy capacity retained for callers and saves that only know the original counter.
 const DISPLAY_CAPACITY := 6
+const DISPLAY_FACILITY_DEFINITIONS := {
+	"display_counter_01": preload("res://data/facilities/display_counter_01.tres"),
+	"display_case_glass_vertical_01": preload("res://data/facilities/display_case_glass_vertical_01.tres"),
+}
 var _display_capacity_migration_pending := false
 ## Persisted auction instances only; AuctionManager owns their transitions.
 var active_auctions: Array[Dictionary] = []
@@ -361,11 +366,12 @@ func import_state(state: Dictionary) -> bool:
 	carried_watch = _sanitize_carried_watch(state.get("carried_watch", {}))
 	purchase_history = _sanitize_purchase_history(state.get("purchase_history", []))
 	_display_capacity_migration_pending = false
-	var displaced_display_unit_ids := _get_display_unit_ids_outside_capacity(state.get("displayed_watches", []))
+	var saved_facilities: Variant = state.get("facility_installations", [])
+	var displaced_display_unit_ids := _get_display_unit_ids_outside_capacity(state.get("displayed_watches", []), saved_facilities)
 	_return_displaced_display_watches_to_inventory(displaced_display_unit_ids)
 	_normalize_piece_ids()
 	displayed_watch = _sanitize_displayed_watch(state.get("displayed_watch", {}))
-	displayed_watches = _sanitize_displayed_watches(state.get("displayed_watches", []))
+	displayed_watches = _sanitize_displayed_watches(state.get("displayed_watches", []), saved_facilities)
 	if displayed_watches.is_empty() and not displayed_watch.is_empty():
 		displayed_watch["slot_index"] = 0
 		displayed_watches.append(displayed_watch.duplicate(true))
@@ -557,9 +563,19 @@ func get_watch_valuation(watch: Dictionary, asking_price: int = -1) -> Dictionar
 
 func get_display_counter_id() -> String:
 	for installation in facility_installations:
-		if String(installation.get("item_id", "")) == "display_counter_01":
+		if _is_display_facility_item(String(installation.get("item_id", ""))):
 			return String(installation.get("installation_id", ""))
 	return ""
+
+func is_display_facility(facility_installation_id: String) -> bool:
+	return _get_display_slot_count(facility_installation_id) > 0
+
+func get_display_slot_count(facility_installation_id: String) -> int:
+	return _get_display_slot_count(facility_installation_id)
+
+func get_display_slot(facility_installation_id: String, slot_index: int) -> Dictionary:
+	var definition := _get_display_facility_definition(facility_installation_id)
+	return definition.get_display_slot(slot_index) if definition != null else {}
 
 func pick_up_owned_watch(piece_index: int, sale_price: int) -> bool:
 	if not carried_watch.is_empty() or piece_index < 0 or piece_index >= owned_pieces.size() or sale_price <= 0:
@@ -575,9 +591,9 @@ func pick_up_owned_watch(piece_index: int, sale_price: int) -> bool:
 
 ## Atomic hand-off invoked by the world proximity controller, never by UI.
 func deposit_carried_watch(facility_installation_id: String, sale_price: int) -> bool:
-	if carried_watch.is_empty() or sale_price <= 0 or get_watch_display_count_for_facility(facility_installation_id) >= DISPLAY_CAPACITY:
+	if carried_watch.is_empty() or sale_price <= 0 or get_watch_display_count_for_facility(facility_installation_id) >= _get_display_slot_count(facility_installation_id):
 		return false
-	if not _is_display_counter(facility_installation_id):
+	if not is_display_facility(facility_installation_id):
 		return false
 	_ensure_carried_watch_identity()
 	var piece := carried_watch.duplicate(true)
@@ -602,7 +618,7 @@ func deposit_carried_watch(facility_installation_id: String, sale_price: int) ->
 func display_owned_watch(piece_index: int, facility_installation_id: String, slot_index: int, sale_price: int) -> bool:
 	if piece_index < 0 or piece_index >= owned_pieces.size() or sale_price <= 0:
 		return false
-	if not _is_display_counter(facility_installation_id) or not is_display_slot_free(facility_installation_id, slot_index):
+	if not is_display_facility(facility_installation_id) or not is_display_slot_free(facility_installation_id, slot_index):
 		return false
 	var piece: Dictionary = owned_pieces.pop_at(piece_index)
 	piece["sale_price"] = sale_price
@@ -667,21 +683,20 @@ func get_watch_display_count_for_facility(facility_installation_id: String) -> i
 	return count
 
 func get_total_display_capacity() -> int:
-	var counter_count := 0
+	var capacity := 0
 	for installation in facility_installations:
-		if String(installation.get("item_id", "")) == "display_counter_01":
-			counter_count += 1
-	return counter_count * DISPLAY_CAPACITY
+		capacity += _get_display_slot_count(String(installation.get("installation_id", "")))
+	return capacity
 
 func has_free_display_slot() -> bool:
 	for installation in facility_installations:
 		var facility_id := String(installation.get("installation_id", ""))
-		if String(installation.get("item_id", "")) == "display_counter_01" and get_watch_display_count_for_facility(facility_id) < DISPLAY_CAPACITY:
+		if is_display_facility(facility_id) and get_watch_display_count_for_facility(facility_id) < _get_display_slot_count(facility_id):
 			return true
 	return false
 
 func is_display_slot_free(facility_installation_id: String, slot_index: int) -> bool:
-	if slot_index < 0 or slot_index >= DISPLAY_CAPACITY:
+	if slot_index < 0 or slot_index >= _get_display_slot_count(facility_installation_id):
 		return false
 	for entry in displayed_watches:
 		if String(entry.get("facility_installation_id", "")) == facility_installation_id and int(entry.get("slot_index", -1)) == slot_index:
@@ -689,7 +704,7 @@ func is_display_slot_free(facility_installation_id: String, slot_index: int) -> 
 	return true
 
 func get_watch_display_snapshot() -> Dictionary:
-	return {"capacity": DISPLAY_CAPACITY, "count": displayed_watches.size(), "watches": displayed_watches.duplicate(true)}
+	return {"capacity": get_total_display_capacity(), "count": displayed_watches.size(), "watches": displayed_watches.duplicate(true)}
 
 func get_displayed_watch(unit_id: String) -> Dictionary:
 	var index := _displayed_watch_index(unit_id)
@@ -709,9 +724,9 @@ func is_visitor_reserved(unit_id: String) -> bool:
 ## slot-based prevents free-form visual positions from leaking into saved gameplay.
 func move_displayed_watch(unit_id: String, target_facility_id: String, target_slot_index: int) -> bool:
 	var index := _displayed_watch_index(unit_id)
-	if index < 0 or is_visitor_reserved(unit_id) or not _is_display_counter(target_facility_id):
+	if index < 0 or is_visitor_reserved(unit_id) or not is_display_facility(target_facility_id):
 		return false
-	if target_slot_index < 0 or target_slot_index >= DISPLAY_CAPACITY:
+	if target_slot_index < 0 or target_slot_index >= _get_display_slot_count(target_facility_id):
 		return false
 	var current: Dictionary = displayed_watches[index]
 	if String(current.get("facility_installation_id", "")) == target_facility_id and int(current.get("slot_index", -1)) == target_slot_index:
@@ -730,7 +745,7 @@ func _first_free_display_slot(facility_installation_id: String) -> int:
 	for entry in displayed_watches:
 		if String(entry.get("facility_installation_id", "")) == facility_installation_id:
 			used[int(entry.get("slot_index", -1))] = true
-	for slot in range(DISPLAY_CAPACITY):
+	for slot in range(_get_display_slot_count(facility_installation_id)):
 		if not used.has(slot): return slot
 	return -1
 
@@ -1056,7 +1071,7 @@ func _sanitize_displayed_watch(value: Variant) -> Dictionary:
 	return {"unit_id": unit_id, "facility_installation_id": facility_id, "sale_price": int(value.get("sale_price", 0)), "rotation_y": float(value.get("rotation_y", 0.0))}
 
 ## Finds watches stored in slots removed by the current shared capacity.
-func _get_display_unit_ids_outside_capacity(value: Variant) -> Dictionary:
+func _get_display_unit_ids_outside_capacity(value: Variant, saved_facilities: Variant) -> Dictionary:
 	var unit_ids: Dictionary = {}
 	if value is Array:
 		for entry in value:
@@ -1064,7 +1079,7 @@ func _get_display_unit_ids_outside_capacity(value: Variant) -> Dictionary:
 				continue
 			var slot := int(entry.get("slot_index", -1))
 			var unit_id := String(entry.get("unit_id", ""))
-			if slot >= DISPLAY_CAPACITY and not unit_id.is_empty():
+			if slot >= _get_saved_display_slot_count(String(entry.get("facility_installation_id", "")), saved_facilities) and not unit_id.is_empty():
 				unit_ids[unit_id] = true
 	return unit_ids
 
@@ -1088,7 +1103,7 @@ func _return_displaced_display_watches_to_inventory(unit_ids: Dictionary) -> voi
 	if returned_count > 0:
 		_display_capacity_migration_pending = true
 
-func _sanitize_displayed_watches(value: Variant) -> Array[Dictionary]:
+func _sanitize_displayed_watches(value: Variant, saved_facilities: Variant) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var used_units: Dictionary = {}
 	var used_slots: Dictionary = {}
@@ -1097,7 +1112,7 @@ func _sanitize_displayed_watches(value: Variant) -> Array[Dictionary]:
 			var clean := _sanitize_displayed_watch(entry)
 			var slot := int((entry as Dictionary).get("slot_index", -1)) if entry is Dictionary else -1
 			var slot_key := "%s:%d" % [String(clean.get("facility_installation_id", "")), slot]
-			if clean.is_empty() or slot < 0 or slot >= DISPLAY_CAPACITY or used_units.has(String(clean.get("unit_id", ""))) or used_slots.has(slot_key): continue
+			if clean.is_empty() or slot < 0 or slot >= _get_saved_display_slot_count(String(clean.get("facility_installation_id", "")), saved_facilities) or used_units.has(String(clean.get("unit_id", ""))) or used_slots.has(slot_key): continue
 			clean["slot_index"] = slot
 			used_units[String(clean.get("unit_id", ""))] = true
 			used_slots[slot_key] = true
@@ -1120,7 +1135,9 @@ func _normalize_displayed_watch() -> void:
 			if String(listed_pieces[index].get("id", "")) == unit_id:
 				listed_index = index
 				break
-		if _is_display_counter(String(entry.get("facility_installation_id", ""))) and listed_index >= 0:
+		var facility_id := String(entry.get("facility_installation_id", ""))
+		var slot_index := int(entry.get("slot_index", -1))
+		if is_display_facility(facility_id) and slot_index >= 0 and slot_index < _get_display_slot_count(facility_id) and listed_index >= 0:
 			valid_entries.append(entry)
 			continue
 		if listed_index >= 0:
@@ -1296,8 +1313,23 @@ func _emit_inventory() -> void:
 func _emit_carried_watch() -> void:
 	EventBus.carried_watch_changed.emit(carried_watch.duplicate(true))
 
-func _is_display_counter(installation_id: String) -> bool:
+func _get_display_slot_count(installation_id: String) -> int:
+	var definition := _get_display_facility_definition(installation_id)
+	return definition.display_slots.size() if definition != null else 0
+
+func _get_saved_display_slot_count(installation_id: String, saved_facilities: Variant) -> int:
+	if saved_facilities is Array:
+		for raw_facility in saved_facilities:
+			if raw_facility is Dictionary and String(raw_facility.get("installation_id", "")) == installation_id:
+				var definition := DISPLAY_FACILITY_DEFINITIONS.get(String(raw_facility.get("item_id", ""))) as FacilityDefinition
+				return definition.display_slots.size() if definition != null else 0
+	return DISPLAY_CAPACITY
+
+func _get_display_facility_definition(installation_id: String) -> FacilityDefinition:
 	for installation in facility_installations:
-		if String(installation.get("installation_id", "")) == installation_id and String(installation.get("item_id", "")) == "display_counter_01":
-			return true
-	return false
+		if String(installation.get("installation_id", "")) == installation_id:
+			return DISPLAY_FACILITY_DEFINITIONS.get(String(installation.get("item_id", ""))) as FacilityDefinition
+	return null
+
+func _is_display_facility_item(item_id: String) -> bool:
+	return DISPLAY_FACILITY_DEFINITIONS.has(item_id)

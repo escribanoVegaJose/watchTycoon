@@ -6,8 +6,6 @@ extends Node
 
 const SLOT_SELECTION_MASK := 128
 const MARKER_COLOR := Color(0.2, 0.82, 0.62, 0.78)
-const WatchDisplayController = preload("res://scripts/gameplay/watch_display_controller.gd")
-
 @onready var camera: Camera3D = get_node(camera_path) as Camera3D
 @onready var _facility_controller: Node = get_node(facility_controller_path)
 
@@ -81,20 +79,20 @@ func _start_relocation(unit_id: String) -> void:
 func _build_markers() -> void:
 	_clear_markers()
 	for installation in GameState.get_facility_installations():
-		if String(installation.get("item_id", "")) != "display_counter_01":
-			continue
 		var facility_id := String(installation.get("installation_id", ""))
+		if not GameState.is_display_facility(facility_id):
+			continue
 		var counter := _facility_controller.call("get_rendered_installation", facility_id) as Node3D
 		if counter == null:
 			continue
-		for slot in range(GameState.DISPLAY_CAPACITY):
+		for slot in range(GameState.get_display_slot_count(facility_id)):
 			if GameState.is_display_slot_free(facility_id, slot):
 				_add_marker(counter, facility_id, slot)
 
 func _add_marker(counter: Node3D, facility_id: String, slot: int) -> void:
 	var marker := Node3D.new()
 	marker.name = "DisplaySlot_%s_%d" % [facility_id, slot]
-	marker.position = _slot_local_position(slot)
+	marker.position = Vector3(GameState.get_display_slot(facility_id, slot).get("position", Vector3.ZERO))
 	counter.add_child(marker)
 	_markers.append(marker)
 	var mesh := MeshInstance3D.new()
@@ -172,9 +170,6 @@ func _clear_markers() -> void:
 		if is_instance_valid(marker):
 			marker.queue_free()
 	_markers.clear()
-
-func _slot_local_position(slot: int) -> Vector3:
-	return WatchDisplayController.get_slot_local_position(slot)
 
 func _current_piece_index() -> int:
 	for index in GameState.owned_pieces.size():

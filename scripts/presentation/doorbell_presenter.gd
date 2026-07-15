@@ -15,4 +15,4 @@ func _on_doorbell_requested() -> void:
 	_player.play()
 
 func _apply_volume(_volume: float) -> void:
-	_player.volume_db = -7.0 + AudioManager.get_effects_volume_db()
+	_player.volume_db = AudioManager.get_effects_volume_db()

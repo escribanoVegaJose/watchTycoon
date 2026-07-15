@@ -15,6 +15,8 @@
       "spawn_weight": 5,
       "preferred_segments": ["Funcional"],
       "min_quality": 70,
+      "preview_image_path": "res://assets/characters/gift_buyer-preview.jpg",
+      "unlock_hint": "Busca regalos funcionales y fáciles de llevar.",
       "search_intentions": [
         {"id": "daily_gift", "label": "Regalo práctico", "detail": "Busca una pieza funcional y fácil de llevar a diario."},
         {"id": "classic_gift", "label": "Regalo clásico", "detail": "Prefiere un diseño sobrio para una ocasión especial."},
@@ -35,7 +37,9 @@
       "patience": 4,
       "spawn_weight": 1,
       "preferred_segments": ["Funcional", "Premium", "Clásico"],
-      "min_quality": 78
+      "min_quality": 78,
+      "preview_image_path": "res://assets/characters/aspirational_professional-preview.jpg",
+      "unlock_hint": "Busca diseño, calidad y una imagen profesional."
     },
     {
       "id": "retired_careful_01",
@@ -52,6 +56,8 @@
       "spawn_weight": 2,
       "preferred_segments": ["Accesible", "Clásico accesible", "Clásico"],
       "min_quality": 68,
+      "preview_image_path": "res://assets/characters/careful_retiree-preview.jpg",
+      "unlock_hint": "Busca joyas clásicas, discretas y duraderas.",
       "required_item_types": ["jewelry"],
       "preferred_categories": ["pendant", "necklace", "earrings"],
       "preferred_brands": ["Lumaire", "Cobrevia", "Valdora"],
@@ -77,7 +83,9 @@
       "patience": 3,
       "spawn_weight": 1,
       "preferred_segments": ["Premium"],
-      "min_quality": 90
+      "min_quality": 90,
+      "preview_image_path": "res://assets/characters/demanding_collector-preview.jpg",
+      "unlock_hint": "Busca piezas Premium de calidad 90 o superior."
     }
   ]
 }

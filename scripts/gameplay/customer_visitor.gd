@@ -255,9 +255,9 @@ func _refresh_behavior() -> void:
 		return
 	if not GameState.active_visitor_negotiation.is_empty():
 		return
-	var display := _get_installed_facility("display_counter_01")
+	var display_id := GameState.get_display_counter_id()
 	var display_visual := _get_nearest_visual("customer_display_counter")
-	if not display.is_empty() and display_visual != null:
+	if not display_id.is_empty() and display_visual != null:
 		_target_visual = display_visual
 		_display_view_point_index = _closest_display_view_point_index()
 		_destination = _display_viewing_point(_display_view_point_index)
@@ -308,6 +308,20 @@ func begin_waiting_outside(queue_position := 0, customer_name := "") -> void:
 	set_attention_indicator(true, "Esperando en\nla entrada")
 	_set_walking(false)
 
+func begin_waiting_to_browse() -> void:
+	if is_leaving_store():
+		return
+	set_visitor_visual(STANDARD_VISUAL_ID)
+	visible = true
+	global_position = exit_position
+	_is_browse_visit = true
+	_customer_name = ""
+	_target_visual = null
+	velocity = Vector3.ZERO
+	_state = State.WAITING_OUTSIDE
+	set_attention_indicator(true, "Esperando en\nla entrada")
+	_set_walking(false)
+
 func _start_pending_purchase_display() -> void:
 	if _is_browse_visit:
 		var display_visual := _get_nearest_visual("customer_display_counter")
@@ -345,6 +359,9 @@ func begin_browse_visit() -> void:
 	_begin_entry_route()
 	_state = State.ENTERING_STORE
 	set_attention_indicator(true, "¿Qué habrá hoy\nen la boutique?")
+
+func is_waiting_outside() -> bool:
+	return _state == State.WAITING_OUTSIDE
 
 func _begin_entry_route(queue_position := 0) -> void:
 	_detour_waypoints.clear()
@@ -420,7 +437,7 @@ func leave_store() -> void:
 	_state = State.WALKING_TO_EXIT_DOOR
 
 func is_leaving_store() -> bool:
-	return _state == State.LEAVING_STORE
+	return _state == State.WALKING_TO_EXIT_DOOR or _state == State.LEAVING_STORE
 
 func _get_installed_facility(item_id: String) -> Dictionary:
 	for installation in GameState.get_facility_installations():

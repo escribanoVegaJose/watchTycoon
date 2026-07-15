@@ -3,6 +3,7 @@ extends Node3D
 const AUCTION_PREVIEW := preload("res://scenes/ui/AuctionPreview3D.tscn")
 const AUCTION_WIN_TOAST := preload("res://scripts/ui/auction_win_toast.gd")
 const MOVE_ICON := preload("res://assets/icons/move.svg")
+const DOOR_OPEN_ICON := preload("res://assets/icons/door_open.svg")
 
 @export var furniture_definitions: Array[PlaceableDefinition] = []
 @export var facility_definitions: Array[FacilityDefinition] = []
@@ -13,6 +14,9 @@ const MOVE_ICON := preload("res://assets/icons/move.svg")
 @onready var reputation_button: Button = %ReputationButton
 @onready var reputation_stars_label: Label = %ReputationStarsLabel
 @onready var reputation_progress: ProgressBar = %ReputationProgress
+@onready var global_reputation_ring: Control = %GlobalReputationRing
+@onready var global_reputation_value: Label = %GlobalReputationValue
+@onready var next_visitor_label: Label = %NextVisitorLabel
 @onready var furniture_panel: PanelContainer = %FurniturePanel
 @onready var furniture_button: Button = %FurnitureButton
 @onready var furniture_grid: GridContainer = %FurnitureGrid
@@ -48,7 +52,6 @@ const MOVE_ICON := preload("res://assets/icons/move.svg")
 @onready var cancel_restart_button: Button = %CancelRestartButton
 @onready var confirm_restart_button: Button = %ConfirmRestartButton
 @onready var language_option: OptionButton = %LanguageOption
-@onready var music_mute_button: Button = %MusicMuteButton
 @onready var music_volume_slider: HSlider = %MusicVolumeSlider
 @onready var effects_volume_slider: HSlider = %EffectsVolumeSlider
 @onready var customer_attention_card: PanelContainer = %CustomerAttentionCard
@@ -91,6 +94,12 @@ var _auction_win_overflow := 0
 var _last_bottom_action_active := ""
 var _visitor_offer_card_height := 0.0
 var _door_admission_button: Button
+var _reputation_hover: PanelContainer
+var _reputation_hover_progress: Label
+var _reputation_hover_bar: ProgressBar
+var _reputation_hover_preview: TextureRect
+var _reputation_hover_profile: Label
+var _reputation_hover_hint: Label
 
 func _ready() -> void:
 	EventBus.stats_changed.connect(_on_stats_changed)
@@ -112,6 +121,8 @@ func _ready() -> void:
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	money_button.pressed.connect(_open_treasury)
 	reputation_button.pressed.connect(_toggle_reputation_panel)
+	reputation_button.mouse_entered.connect(_show_reputation_hover)
+	reputation_button.mouse_exited.connect(_hide_reputation_hover)
 	cancel_placement_button.pressed.connect(_on_cancel_placement_pressed)
 	move_window_button.pressed.connect(_on_move_window_pressed)
 	demolish_window_button.pressed.connect(_on_demolish_window_pressed)
@@ -126,8 +137,6 @@ func _ready() -> void:
 	cancel_restart_button.pressed.connect(_on_cancel_restart_pressed)
 	confirm_restart_button.pressed.connect(_on_confirm_restart_pressed)
 	language_option.item_selected.connect(_on_language_selected)
-	music_mute_button.pressed.connect(_on_music_mute_pressed)
-	AudioManager.music_mute_changed.connect(_refresh_music_mute_button)
 	music_volume_slider.value_changed.connect(_on_music_volume_changed)
 	effects_volume_slider.value_changed.connect(_on_effects_volume_changed)
 	for customer_node in get_tree().get_nodes_in_group("world_selectable_customer"):
@@ -148,12 +157,12 @@ func _ready() -> void:
 	finish_actions.visible = false
 	_create_customer_context_panel()
 	_create_reputation_panel()
+	_create_reputation_hover()
 	game_menu_overlay.visible = false
 	customer_attention_card.visible = false
 	_resize_customer_attention_card()
 	restart_confirmation.visible = false
 	_refresh_language_option()
-	_refresh_music_mute_button(SettingsManager.music_muted)
 	music_volume_slider.value = SettingsManager.music_volume
 	effects_volume_slider.value = SettingsManager.effects_volume
 	game_menu_overlay.add_to_group("game_menu_overlay")
@@ -167,11 +176,13 @@ func _ready() -> void:
 	_on_customer_reviews_changed(GameState.get_customer_rating(), GameState.get_customer_reviews())
 	_on_monthly_expense_preview_changed(FinanceManager.get_expense_preview(), FinanceManager.get_days_until_settlement())
 
-func _on_stats_changed(money: int, _reputation: int) -> void:
+func _on_stats_changed(money: int, reputation: int) -> void:
 	money_label.text = _format_money(money)
 	money_label.add_theme_color_override("font_color", Color(0.72, 0.18, 0.18, 1.0) if money < 0 else Color(0.964706, 0.933333, 0.858824, 1))
 	_refresh_purchase_buttons()
 	_refresh_treasury()
+	_refresh_global_reputation(reputation)
+	_refresh_reputation_panel(GameState.get_customer_rating(), GameState.get_customer_reviews())
 
 func _on_auction_resolved(result: Dictionary) -> void:
 	# Only a successful player acquisition is noteworthy at HUD level. Auction
@@ -237,10 +248,147 @@ func _make_auction_win_toast_style() -> StyleBoxFlat:
 
 func _on_customer_reviews_changed(rating: float, reviews: Array[Dictionary]) -> void:
 	var filled := clampi(roundi(rating), 0, 5)
-	reputation_stars_label.text = "REPUTACIÓN\n" + "★".repeat(filled) + "☆".repeat(5 - filled)
+	reputation_stars_label.text = "CLIENTES\n" + "★".repeat(filled) + "☆".repeat(5 - filled)
 	reputation_progress.value = rating
-	reputation_button.tooltip_text = "Reputación de clientes basada en %d reseñas" % reviews.size()
+	reputation_button.tooltip_text = "Valoración de clientes: %.1f/5 · Reputación de la maison: %d REP." % [rating, GameState.reputation]
 	_refresh_reputation_panel(rating, reviews)
+
+func _refresh_global_reputation(reputation: int) -> void:
+	var unlock := _get_next_visitor_unlock(reputation)
+	global_reputation_value.text = str(reputation)
+	if unlock.is_empty():
+		global_reputation_ring.call("set_progress", 1.0)
+		next_visitor_label.text = "Todos listos"
+		next_visitor_label.tooltip_text = "Todos los perfiles actuales están desbloqueados."
+		_refresh_reputation_hover()
+		return
+	var previous_threshold := int(unlock.get("previous_threshold", 0))
+	var target := int(unlock.get("target", 1))
+	global_reputation_ring.call("set_progress", float(reputation - previous_threshold) / float(maxi(1, target - previous_threshold)))
+	next_visitor_label.text = "Próx. · %d" % target
+	next_visitor_label.tooltip_text = "Desbloquea: %s (%d REP.)" % [String(unlock.get("name", "Cliente")), target]
+	_refresh_reputation_hover()
+
+func _get_next_visitor_unlock(reputation: int) -> Dictionary:
+	var next_profile: Dictionary = {}
+	var target := 0
+	for profile in DataRegistry.get_visitor_profiles():
+		var threshold := int(profile.get("min_reputation", 0))
+		if threshold > reputation and (next_profile.is_empty() or threshold < target):
+			next_profile = profile
+			target = threshold
+	if next_profile.is_empty():
+		return {}
+	var previous_threshold := 0
+	for profile in DataRegistry.get_visitor_profiles():
+		var threshold := int(profile.get("min_reputation", 0))
+		if threshold <= reputation:
+			previous_threshold = maxi(previous_threshold, threshold)
+	return {"name": String(next_profile.get("name", "Cliente")), "target": target, "previous_threshold": previous_threshold, "profile": next_profile.duplicate(true)}
+
+func _create_reputation_hover() -> void:
+	_reputation_hover = PanelContainer.new()
+	_reputation_hover.name = "ReputationHover"
+	_reputation_hover.visible = false
+	_reputation_hover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_reputation_hover.custom_minimum_size = Vector2(288, 148)
+	_reputation_hover.size = Vector2(288, 148)
+	_reputation_hover.z_index = 25
+	_reputation_hover.add_theme_stylebox_override("panel", _make_reputation_hover_style())
+	get_node("HudLayer").add_child(_reputation_hover)
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	_reputation_hover.add_child(margin)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 4)
+	margin.add_child(column)
+	var heading := Label.new()
+	heading.text = "REPUTACIÓN DE LA MAISON"
+	heading.add_theme_font_size_override("font_size", 12)
+	heading.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35, 1.0))
+	column.add_child(heading)
+	_reputation_hover_progress = Label.new()
+	_reputation_hover_progress.add_theme_font_size_override("font_size", 13)
+	_reputation_hover_progress.add_theme_color_override("font_color", Color(0.96, 0.91, 0.8, 1.0))
+	column.add_child(_reputation_hover_progress)
+	_reputation_hover_bar = ProgressBar.new()
+	_reputation_hover_bar.custom_minimum_size = Vector2(0, 6)
+	_reputation_hover_bar.max_value = 1.0
+	_reputation_hover_bar.show_percentage = false
+	_reputation_hover_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_reputation_hover_bar.add_theme_stylebox_override("background", _make_reputation_progress_style(Color(0.12, 0.11, 0.09, 1.0)))
+	_reputation_hover_bar.add_theme_stylebox_override("fill", _make_reputation_progress_style(Color(0.82, 0.63, 0.29, 1.0)))
+	column.add_child(_reputation_hover_bar)
+	var preview_row := HBoxContainer.new()
+	preview_row.custom_minimum_size = Vector2(0, 48)
+	preview_row.add_theme_constant_override("separation", 8)
+	column.add_child(preview_row)
+	_reputation_hover_preview = TextureRect.new()
+	_reputation_hover_preview.custom_minimum_size = Vector2(46, 46)
+	_reputation_hover_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_reputation_hover_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview_row.add_child(_reputation_hover_preview)
+	var preview_copy := VBoxContainer.new()
+	preview_copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	preview_row.add_child(preview_copy)
+	_reputation_hover_profile = Label.new()
+	_reputation_hover_profile.add_theme_font_size_override("font_size", 13)
+	_reputation_hover_profile.add_theme_color_override("font_color", Color(0.96, 0.91, 0.8, 1.0))
+	preview_copy.add_child(_reputation_hover_profile)
+	_reputation_hover_hint = Label.new()
+	_reputation_hover_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_reputation_hover_hint.add_theme_font_size_override("font_size", 11)
+	_reputation_hover_hint.add_theme_color_override("font_color", Color(0.78, 0.75, 0.67, 1.0))
+	preview_copy.add_child(_reputation_hover_hint)
+
+func _show_reputation_hover() -> void:
+	_refresh_reputation_hover()
+	var button_rect := reputation_button.get_global_rect()
+	_reputation_hover.global_position = Vector2(button_rect.position.x, button_rect.position.y - _reputation_hover.size.y - 8.0)
+	_reputation_hover.visible = true
+
+func _hide_reputation_hover() -> void:
+	if _reputation_hover != null:
+		_reputation_hover.visible = false
+
+func _refresh_reputation_hover() -> void:
+	if _reputation_hover_progress == null:
+		return
+	var reputation := GameState.reputation
+	var unlock := _get_next_visitor_unlock(reputation)
+	if unlock.is_empty():
+		_reputation_hover_progress.text = "%d REP. · perfiles actuales desbloqueados" % reputation
+		_reputation_hover_bar.value = 1.0
+		_reputation_hover_preview.texture = null
+		_reputation_hover_profile.text = "MAISON CONSOLIDADA"
+		_reputation_hover_hint.text = "Mantén la valoración alta para atraer mejores oportunidades."
+		return
+	var target := int(unlock.get("target", 1))
+	var start := int(unlock.get("previous_threshold", 0))
+	var profile := unlock.get("profile", {}) as Dictionary
+	_reputation_hover_progress.text = "%d / %d REP. para el próximo perfil" % [reputation, target]
+	_reputation_hover_bar.value = clampf(float(reputation - start) / float(maxi(1, target - start)), 0.0, 1.0)
+	_reputation_hover_profile.text = "PRÓXIMO · %s" % String(unlock.get("name", "Cliente"))
+	_reputation_hover_hint.text = String(profile.get("unlock_hint", "Desbloquea un nuevo perfil de cliente."))
+	var preview_path := String(profile.get("preview_image_path", ""))
+	_reputation_hover_preview.texture = load(preview_path) as Texture2D if not preview_path.is_empty() else null
+
+func _make_reputation_hover_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.035, 0.04, 0.042, 0.98)
+	style.border_color = Color(0.72, 0.57, 0.32, 0.8)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	return style
+
+func _make_reputation_progress_style(color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.set_corner_radius_all(3)
+	return style
 
 func _toggle_reputation_panel() -> void:
 	_reputation_panel.visible = not _reputation_panel.visible
@@ -287,9 +435,16 @@ func _create_reputation_panel() -> void:
 func _refresh_reputation_panel(rating: float, reviews: Array[Dictionary]) -> void:
 	if _reputation_title == null or _reviews_content == null:
 		return
-	_reputation_title.text = "REPUTACIÓN  %s %.1f / 5" % ["★".repeat(clampi(roundi(rating), 0, 5)) + "☆".repeat(5 - clampi(roundi(rating), 0, 5)), rating]
+	_reputation_title.text = "VALORACIÓN DE CLIENTES  %s %.1f / 5" % ["★".repeat(clampi(roundi(rating), 0, 5)) + "☆".repeat(5 - clampi(roundi(rating), 0, 5)), rating]
 	for child in _reviews_content.get_children():
 		child.queue_free()
+	var reputation := GameState.reputation
+	var unlock := _get_next_visitor_unlock(reputation)
+	var unlock_label := Label.new()
+	unlock_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	unlock_label.add_theme_color_override("font_color", Color(0.55, 0.38, 0.13, 1.0))
+	unlock_label.text = "REPUTACIÓN DE LA MAISON · %d REP.\n%s" % [reputation, "Todos los perfiles actuales están desbloqueados." if unlock.is_empty() else "Próximo perfil: %s · faltan %d REP." % [String(unlock.get("name", "Cliente")), int(unlock.get("target", 0)) - reputation]]
+	_reviews_content.add_child(unlock_label)
 	if reviews.is_empty():
 		var empty := Label.new()
 		empty.text = "Aún no hay reseñas. Las visitas resolverán la primera valoración."
@@ -704,14 +859,13 @@ func _create_catalog_card(definition, is_facility: bool) -> PanelContainer:
 	name_label.add_theme_font_size_override("font_size", 12)
 	name_label.add_theme_color_override("font_color", Color(0.137255, 0.105882, 0.0784314, 1.0))
 	column.add_child(name_label)
-	if is_facility and not definition.catalog_description.is_empty():
-		var description_label := Label.new()
-		description_label.text = definition.catalog_description
-		description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		description_label.add_theme_font_size_override("font_size", 12)
-		description_label.add_theme_color_override("font_color", Color(0.137255, 0.105882, 0.0784314, 0.82))
-		column.add_child(description_label)
+	var stats_label := Label.new()
+	stats_label.text = _catalog_item_stats(definition, is_facility)
+	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stats_label.add_theme_font_size_override("font_size", 11)
+	stats_label.add_theme_color_override("font_color", Color(0.137255, 0.105882, 0.0784314, 0.82))
+	column.add_child(stats_label)
 	var select_button := Button.new()
 	select_button.custom_minimum_size = Vector2(0.0, 36.0)
 	select_button.text = "%s · %s" % ["Instalar" if is_facility else "Comprar", _format_money(definition.price)]
@@ -725,6 +879,24 @@ func _create_catalog_card(definition, is_facility: bool) -> PanelContainer:
 	column.add_child(select_button)
 	_refresh_purchase_buttons()
 	return card
+
+func _catalog_item_stats(definition, is_facility: bool) -> String:
+	if is_facility and definition is FacilityDefinition:
+		var facility := definition as FacilityDefinition
+		var footprint := facility.footprint_half_extents * 2.0
+		var surface := "%.1f × %.1f m" % [footprint.x, footprint.y]
+		if facility.is_display_facility():
+			var levels: Dictionary = {}
+			for slot in facility.display_slots:
+				levels[snappedf((slot.get("position", Vector3.ZERO) as Vector3).y, 0.01)] = true
+			return "HUECOS  %d · NIVELES  %d\nSUPERFICIE  %s" % [facility.display_slots.size(), levels.size(), surface]
+		return "COMERCIO · %s\nSUPERFICIE  %s" % ["ÚNICO" if facility.max_installations == 1 else "DISPONIBLE", surface]
+	if definition is PlaceableDefinition:
+		var furniture := definition as PlaceableDefinition
+		var opening_width := furniture.opening_half_width * 2.0
+		var opening_height := furniture.opening_half_height * 2.0
+		return "PARED INTERIOR · APERTURA\n%.1f × %.1f m" % [opening_width, opening_height]
+	return "OBJETO DE BOUTIQUE"
 
 func _refresh_purchase_buttons() -> void:
 	for button in _purchase_buttons:
@@ -1208,38 +1380,56 @@ func _process(_delta: float) -> void:
 		_position_selection_panel()
 	_refresh_bottom_action_style()
 	_refresh_door_admission_button()
+	_animate_door_admission_button()
 
 func _create_door_admission_button() -> void:
 	_door_admission_button = Button.new()
 	_door_admission_button.name = "DoorAdmissionButton"
 	_door_admission_button.visible = false
 	_door_admission_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	_door_admission_button.add_theme_font_size_override("font_size", 13)
+	_door_admission_button.icon = DOOR_OPEN_ICON
+	_door_admission_button.expand_icon = true
+	_door_admission_button.tooltip_text = "Abrir puerta"
 	_door_admission_button.add_theme_stylebox_override("normal", _make_bottom_action_button_style(false))
+	_door_admission_button.add_theme_stylebox_override("hover", _make_bottom_action_button_style(true))
+	_door_admission_button.size = Vector2(52, 52)
 	_door_admission_button.pressed.connect(func() -> void: EventBus.visitor_door_open_requested.emit())
 	get_node("HudLayer").add_child(_door_admission_button)
 
 func _refresh_door_admission_button() -> void:
-	if _door_admission_button == null or selection_camera == null:
+	if _door_admission_button == null:
 		return
 	var waiting_count := 0
 	for negotiation in GameState.get_visitor_negotiations():
 		if String(negotiation.get("state", "")) == "waiting_outside":
 			waiting_count += 1
+	var visitor_manager := get_tree().get_first_node_in_group("visitor_negotiation_manager") as VisitorNegotiationManager
+	if waiting_count == 0 and visitor_manager != null and visitor_manager.has_waiting_browse_visitor():
+		waiting_count = 1
+	_door_admission_button.text = ""
+	if waiting_count == 0:
+		_door_admission_button.visible = false
+		return
 	var counters := get_tree().get_nodes_in_group("point_of_sale_counter")
-	if waiting_count == 0 or counters.is_empty() or not counters[0] is Node3D:
-		_door_admission_button.visible = false
-		return
-	var counter := counters[0] as Node3D
-	var anchor := counter.global_position + Vector3.UP * 1.35
-	if selection_camera.is_position_behind(anchor):
-		_door_admission_button.visible = false
-		return
-	_door_admission_button.text = "Abrir puerta · %d" % waiting_count
-	_door_admission_button.size = Vector2(126, 32)
-	var screen_position := selection_camera.unproject_position(anchor)
-	_door_admission_button.position = screen_position - _door_admission_button.size * 0.5
+	if not counters.is_empty() and counters[0] is Node3D and selection_camera != null:
+		var counter := counters[0] as Node3D
+		var anchor := counter.global_position + Vector3.UP * 1.5
+		if not selection_camera.is_position_behind(anchor):
+			_door_admission_button.set_anchors_preset(Control.PRESET_TOP_LEFT)
+			_door_admission_button.position = selection_camera.unproject_position(anchor) - _door_admission_button.size * 0.5
+			_door_admission_button.visible = true
+			return
+	# El botón sigue accesible si el TPV aún no está instalado o está fuera de plano.
+	_door_admission_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_door_admission_button.position = Vector2(-_door_admission_button.size.x * 0.5, -88.0)
 	_door_admission_button.visible = true
+
+func _animate_door_admission_button() -> void:
+	if _door_admission_button == null or not _door_admission_button.visible:
+		return
+	# El icono palpita mientras el timbre requiere una respuesta, sin mover su anclaje.
+	var pulse := 0.84 + sin(Time.get_ticks_msec() * 0.008) * 0.16
+	_door_admission_button.modulate = Color(1.0, 1.0, 1.0, pulse)
 
 func _refresh_bottom_action_style() -> void:
 	var active := "auction" if commerce_panel.visible else "inventory" if inventory_panel.visible else "menu" if game_menu_overlay.visible else ""
@@ -1371,13 +1561,6 @@ func _refresh_language_option() -> void:
 	language_option.add_item(tr("Inglés"))
 	language_option.set_item_metadata(1, "en")
 	language_option.select(0 if String(_settings_manager().get("locale")) == "es" else 1)
-
-func _on_music_mute_pressed() -> void:
-	AudioManager.toggle_music_mute()
-
-func _refresh_music_mute_button(is_muted: bool) -> void:
-	music_mute_button.text = tr("🔇 Música") if is_muted else tr("🔊 Música")
-	music_mute_button.tooltip_text = tr("Activar música") if is_muted else tr("Silenciar música")
 
 func _on_music_volume_changed(volume: float) -> void:
 	SettingsManager.set_music_volume(volume)
