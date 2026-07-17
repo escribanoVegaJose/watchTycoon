@@ -56,6 +56,10 @@ func _add_watch(entry: Dictionary) -> void:
 	var root := Node3D.new()
 	root.name = "DisplayedWatch_%s" % String(entry.get("unit_id", ""))
 	root.position = Vector3(GameState.get_display_slot(facility_id, slot).get("position", Vector3.ZERO))
+	if String(piece.get("item_type", "watch")) == "jewelry":
+		var facility_visual := gallery.get_parent() as Node3D
+		var visual_scale_y := facility_visual.scale.y if facility_visual != null else 1.0
+		root.position.y += 0.06 / maxf(visual_scale_y, 0.001)
 	root.scale = Vector3(GameState.get_display_slot(facility_id, slot).get("scale", Vector3.ONE))
 	root.rotation.y = float(entry.get("rotation_y", 0.0))
 	root.add_to_group("world_selectable_displayed_watch")
@@ -70,20 +74,20 @@ func _add_watch(entry: Dictionary) -> void:
 	_add_selection_collider(root, entry)
 
 func _add_price_chip(root: Node3D, price: int, reserved := false) -> void:
-	# Keep the tag just above the piece so it never obscures the watch.
-	# Price text is intentionally twice the former size for readability in-world.
+	# Keep the tag just above the piece so it never obscures the watch. The
+	# larger, depth-independent label remains legible through the vitrina glass.
 	# The selectable area remains independent.
 	var price_text := "%s € · RESERVADO" % price if reserved else "%s €" % price
-	var chip_width := maxf(0.26, 0.060 + float(price_text.length()) * 0.040)
+	var chip_width := maxf(0.68, 0.152 + float(price_text.length()) * 0.092)
 	var chip := Node3D.new()
 	chip.name = "PriceChip"
-	chip.position = Vector3(0.0, 0.22, 0.0)
+	chip.position = Vector3(0.0, 0.40, 0.0)
 	root.add_child(chip)
 	_price_chips.append(chip)
-	var border := _create_chip_panel(chip_width, 0.096, Color(0.82, 0.34, 0.16, 1.0) if reserved else Color(0.72, 0.54, 0.20, 1.0), 0)
+	var border := _create_chip_panel(chip_width, 0.244, Color(0.82, 0.34, 0.16, 1.0) if reserved else Color(0.72, 0.54, 0.20, 1.0), 0)
 	border.name = "PriceChipGoldBorder"
 	chip.add_child(border)
-	var background := _create_chip_panel(chip_width - 0.012, 0.084, Color(0.025, 0.022, 0.018, 1.0), 1)
+	var background := _create_chip_panel(chip_width - 0.028, 0.216, Color(0.025, 0.022, 0.018, 1.0), 1)
 	background.name = "PriceChipBackground"
 	# The child planes face +Z. Positive Z is nearer to the camera after the
 	# billboard pivot turns, which gives border, background and text stable depth.
@@ -94,11 +98,12 @@ func _add_price_chip(root: Node3D, price: int, reserved := false) -> void:
 	label.text = price_text
 	label.position.z = 0.002
 	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
-	label.font_size = 48
-	label.pixel_size = 0.0015
-	label.outline_size = 1
+	label.font_size = 56
+	label.pixel_size = 0.0034
+	label.outline_size = 2
 	label.modulate = Color(1.0, 0.77, 0.58, 1.0) if reserved else Color(1.0, 0.94, 0.76, 1.0)
 	label.outline_modulate = Color(0.10, 0.07, 0.03, 1.0)
+	label.no_depth_test = true
 	label.render_priority = 2
 	chip.add_child(label)
 	var camera := get_viewport().get_camera_3d()
@@ -143,6 +148,8 @@ func _fit_model(model: Node3D, item_type: String, category: String) -> void:
 	if not is_instance_valid(model): return
 	var bounds := _get_bounds(model)
 	var factor := ItemModelFraming.scale_to_fit(bounds, ItemModelFraming.display_envelope(item_type, category))
+	if item_type == "jewelry":
+		factor *= 1.35
 	if factor > 0.001:
 		# The type envelope preserves clearance between slots; real model bounds
 		# still handle inconsistent pivots and exporter units.

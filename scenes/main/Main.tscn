@@ -13,6 +13,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/TimePanel.tscn" id="17_time_panel"]
 [ext_resource type="Script" uid="uid://bcjnw35e4mi52" path="res://scripts/gameplay/facade_wall.gd" id="18_facade_wall"]
 [ext_resource type="Script" uid="uid://dcmgy8ag5dlg2" path="res://scripts/gameplay/facade_openings_controller.gd" id="19_facade_openings"]
+[ext_resource type="Script" path="res://scripts/gameplay/facade_default_window.gd" id="46_default_window_script"]
+[ext_resource type="PackedScene" path="res://assets/meshy/godot_ready/window_wood_open_glass.glb" id="47_default_window_visual"]
 [ext_resource type="Texture2D" uid="uid://c5ypspf5hh5os" path="res://assets/icons/palette.svg" id="20_palette_icon"]
 [ext_resource type="Texture2D" uid="uid://cdxr4f7dmchp" path="res://assets/icons/move.svg" id="21_move_icon"]
 [ext_resource type="PackedScene" path="res://scenes/characters/Watchmaker.tscn" id="22_watchmaker"]
@@ -24,7 +26,8 @@
 [ext_resource type="Script" uid="uid://dk55n3smfeikw" path="res://scripts/gameplay/facility_definition.gd" id="28_facility_definition"]
 [ext_resource type="Texture2D" uid="uid://c1l4k1p7fppea" path="res://assets/icons/demolish.svg" id="29_demolish_icon"]
 [ext_resource type="Resource" path="res://data/facilities/display_counter_01.tres" id="30_display_counter_definition"]
-[ext_resource type="Resource" path="res://data/facilities/display_case_glass_vertical_01.tres" id="43_display_case_definition"]
+[ext_resource type="Resource" path="res://data/facilities/display_case_small_02.tres" id="44_display_case_small_definition"]
+[ext_resource type="Resource" path="res://data/facilities/display_case_medium_04.tres" id="45_display_case_medium_definition"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CommercePanel.tscn" id="31_commerce_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/InventoryPanel.tscn" id="37_inventory_panel"]
 [ext_resource type="Script" uid="uid://cn3uhlu6yb3qq" path="res://scripts/gameplay/world_selection_highlight.gd" id="32_selection_highlight"]
@@ -248,7 +251,7 @@ corner_radius_bottom_left = 8
 [node name="Main" type="Node3D" unique_id=2055157705]
 script = ExtResource("1_main_script")
 furniture_definitions = Array[ExtResource("7_hjnkw")]([ExtResource("14_window_definition")])
-facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition"), ExtResource("43_display_case_definition")])
+facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition"), ExtResource("44_display_case_small_definition"), ExtResource("45_display_case_medium_definition")])
 
 [node name="Architecture" type="Node3D" parent="." unique_id=1586308290]
 
@@ -277,6 +280,22 @@ has_door_opening = true
 
 [node name="EntranceDoor" parent="Architecture/FacadeSlots" unique_id=2039982728 instance=ExtResource("6_entrance_door")]
 transform = Transform3D(1.55, 0, 0, 0, 1.55, 0, 0, 0, 1.55, 1.47, 1.47, -6.16)
+
+[node name="StarterWindowLeft" type="Node3D" parent="Architecture/FacadeSlots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 1.55, -6.7)
+script = ExtResource("46_default_window_script")
+wall_id = "back"
+
+[node name="Visual" parent="Architecture/FacadeSlots/StarterWindowLeft" instance=ExtResource("47_default_window_visual")]
+scale = Vector3(1.1, 1.1, 1.1)
+
+[node name="StarterWindowRight" type="Node3D" parent="Architecture/FacadeSlots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 1.55, -6.7)
+script = ExtResource("46_default_window_script")
+wall_id = "back"
+
+[node name="Visual" parent="Architecture/FacadeSlots/StarterWindowRight" instance=ExtResource("47_default_window_visual")]
+scale = Vector3(1.1, 1.1, 1.1)
 
 [node name="LeftWall" type="Node3D" parent="Architecture" unique_id=551885232]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.1, 0)
@@ -307,7 +326,7 @@ wall_material = SubResource("MatWall")
 script = ExtResource("19_facade_openings")
 wall_paths = Array[NodePath]([NodePath("../BackWall"), NodePath("../FrontWall"), NodePath("../LeftWall"), NodePath("../RightWall")])
 placeable_definitions = Array[ExtResource("7_hjnkw")]([ExtResource("14_window_definition")])
-default_opening_paths = Array[NodePath]([NodePath(""), NodePath(""), NodePath(""), NodePath("")])
+default_opening_paths = Array[NodePath]([NodePath("../FacadeSlots/StarterWindowLeft"), NodePath("../FacadeSlots/StarterWindowRight")])
 
 [node name="PlacedFacadeItems" type="Node3D" parent="Architecture" unique_id=1251824660]
 
@@ -402,13 +421,13 @@ script = ExtResource("16_placement_controller")
 camera_path = NodePath("../CameraRig/YawPivot/PitchPivot/Camera3D")
 installation_container_path = NodePath("../Architecture/PlacedFacadeItems")
 window_definition = ExtResource("14_window_definition")
-default_window_paths = Array[NodePath]([NodePath(""), NodePath(""), NodePath(""), NodePath("")])
+default_window_paths = Array[NodePath]([NodePath("../Architecture/FacadeSlots/StarterWindowLeft"), NodePath("../Architecture/FacadeSlots/StarterWindowRight")])
 
 [node name="FacilityPlacementController" type="Node" parent="." unique_id=1431373857]
 script = ExtResource("27_facility_controller")
 camera_path = NodePath("../CameraRig/YawPivot/PitchPivot/Camera3D")
 installation_container_path = NodePath("../Architecture/PlacedFacilities")
-facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition"), ExtResource("43_display_case_definition")])
+facility_definitions = Array[ExtResource("28_facility_definition")]([ExtResource("26_counter_definition"), ExtResource("30_display_counter_definition"), ExtResource("44_display_case_small_definition"), ExtResource("45_display_case_medium_definition")])
 
 [node name="WatchDisplayController" type="Node" parent="." unique_id=1139365877]
 script = ExtResource("33_watch_display_controller")

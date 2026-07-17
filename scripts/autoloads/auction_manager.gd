@@ -100,6 +100,8 @@ func get_snapshots() -> Array[Dictionary]:
 	return snapshots
 
 func place_player_bid(instance_id: String, amount: int) -> Dictionary:
+	if not GameState.can_access_commerce():
+		return {"success": false, "message": "Instala un Punto de venta antes de participar en pujas."}
 	if not GameState.carried_watch.is_empty():
 		return {"success": false, "message": "Deposita la pieza que transportas en una vitrina antes de pujar de nuevo."}
 	var index := _index_for_instance(instance_id)

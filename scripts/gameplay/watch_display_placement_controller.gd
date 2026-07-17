@@ -93,6 +93,13 @@ func _add_marker(counter: Node3D, facility_id: String, slot: int) -> void:
 	var marker := Node3D.new()
 	marker.name = "DisplaySlot_%s_%d" % [facility_id, slot]
 	marker.position = Vector3(GameState.get_display_slot(facility_id, slot).get("position", Vector3.ZERO))
+	# Facility visuals may have an import-correction scale. Keep the marker and
+	# its click collider at a consistent world size instead of scaling with it.
+	marker.scale = Vector3(
+		1.0 / maxf(counter.scale.x, 0.001),
+		1.0 / maxf(counter.scale.y, 0.001),
+		1.0 / maxf(counter.scale.z, 0.001)
+	)
 	counter.add_child(marker)
 	_markers.append(marker)
 	var mesh := MeshInstance3D.new()

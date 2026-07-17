@@ -27,6 +27,9 @@ signal attention_indicator_changed(is_visible: bool, message: String, bubble_sty
 @export var entrance_position := Vector3(1.47, 0.0, -5.35)
 @export var exit_position := Vector3(1.47, 0.0, -7.4)
 @export var visitor_instance_id := "customer_1"
+# Assigned by VisitorNegotiationManager from its customer_paths ordering. This
+# is presentation identity only; negotiation ownership remains in GameState.
+var customer_slot := -1
 
 @onready var idle_visual: Node3D = $IdleVisual
 @onready var walk_visual: Node3D = $WalkVisual
@@ -59,6 +62,7 @@ var _detour_waypoints: Array[Vector3] = []
 var _consecutive_collisions := 0
 var _detour_side := 1.0
 var _reaction_time_remaining := 0.0
+var _departure_message := ""
 
 func _ready() -> void:
 	# Los props instalados y las paredes publican su volumen en WorldSolid. No se
@@ -118,7 +122,11 @@ func _physics_process(delta: float) -> void:
 			_face_target()
 			_viewing_time_remaining -= simulation_delta
 			if _viewing_time_remaining <= 0.0:
-				if not _walk_to_negotiation_counter():
+				var manager := get_tree().get_first_node_in_group("visitor_negotiation_manager")
+				# La reserva se crea al terminar de observar la pieza, nunca al abrir la puerta.
+				if manager == null or not manager.customer_chose_piece(visitor_instance_id):
+					_notify_visit_failed("La pieza ya no está disponible o no encaja con lo que busca.")
+				elif not _walk_to_negotiation_counter():
 					_notify_visit_failed("No hay una caja disponible.")
 		State.VIEWING_COUNTER:
 			_face_target()
@@ -129,9 +137,6 @@ func _physics_process(delta: float) -> void:
 		State.DECIDING_PURCHASE:
 			_viewing_time_remaining -= simulation_delta
 			if _viewing_time_remaining <= 0.0:
-				var manager := get_tree().get_first_node_in_group("visitor_negotiation_manager")
-				if manager != null:
-					manager.customer_chose_piece(visitor_instance_id)
 				_start_pending_purchase_display()
 		State.REACTION:
 			_reaction_time_remaining -= simulation_delta
@@ -277,6 +282,7 @@ func _refresh_behavior() -> void:
 
 func begin_purchase_visit(display_entry: Dictionary, watch_name: String, queue_position := 0, customer_name := "") -> bool:
 	_is_browse_visit = false
+	_departure_message = ""
 	_queue_position = queue_position
 	_customer_name = customer_name.strip_edges()
 	var facility_id := String(display_entry.get("facility_installation_id", ""))
@@ -308,6 +314,40 @@ func begin_waiting_outside(queue_position := 0, customer_name := "") -> void:
 	set_attention_indicator(true, "Esperando en\nla entrada")
 	_set_walking(false)
 
+## Una visita que nunca entró se libera fuera de cámara; no debe recorrer el
+## interior para abandonar una pieza que ya no existe en la vitrina.
+func cancel_waiting_outside() -> void:
+	if _state != State.WAITING_OUTSIDE:
+		return
+	visible = false
+	velocity = Vector3.ZERO
+	_target_visual = null
+	_pending_display_visual = null
+	set_attention_indicator(false)
+	_state = State.IDLE
+	_set_walking(false)
+
+## Las reservas restauradas no vuelven a observar la vitrina. Se muestran en
+## caja y conservan el estado económico que GameState ya había persistido.
+func restore_waiting_at_counter(queue_position := 0, customer_name := "", is_active := false) -> void:
+	_is_browse_visit = false
+	_queue_position = queue_position
+	_customer_name = customer_name.strip_edges()
+	var counter := _get_installed_facility(GameState.POINT_OF_SALE_FACILITY_ID)
+	var counter_visual := _get_nearest_visual("point_of_sale_counter")
+	if counter.is_empty() or counter_visual == null:
+		visible = false
+		_state = State.IDLE
+		return
+	visible = true
+	_target_visual = counter_visual
+	global_position = _closest_counter_viewing_point(counter, counter_visual)
+	global_position += counter_visual.global_transform.basis.orthonormalized() * Vector3(0.0, 0.0, float(queue_position) * 0.9)
+	velocity = Vector3.ZERO
+	_state = State.WAITING_FOR_ATTENDANCE
+	set_attention_indicator(true, "En caja: listo para\n%s." % ("cerrar la compra" if is_active else "esperar turno"))
+	_set_walking(false)
+
 func begin_waiting_to_browse() -> void:
 	if is_leaving_store():
 		return
@@ -315,6 +355,7 @@ func begin_waiting_to_browse() -> void:
 	visible = true
 	global_position = exit_position
 	_is_browse_visit = true
+	_departure_message = "Gracias, pero no he encontrado\nuna pieza adecuada para mí."
 	_customer_name = ""
 	_target_visual = null
 	velocity = Vector3.ZERO
@@ -349,7 +390,7 @@ func begin_browse_visit() -> void:
 	if is_leaving_store():
 		return
 	# Ambient visits do not have an economic profile. Always use the standard
-	# shopper instead of retaining the appearance of a prior classic purchase.
+	# shopper instead of retaining the appearance of a prior purchase visitor.
 	set_visitor_visual(STANDARD_VISUAL_ID)
 	visible = true
 	global_position = exit_position
@@ -362,6 +403,9 @@ func begin_browse_visit() -> void:
 
 func is_waiting_outside() -> bool:
 	return _state == State.WAITING_OUTSIDE
+
+func is_available_for_visit() -> bool:
+	return _state == State.IDLE and not visible
 
 func _begin_entry_route(queue_position := 0) -> void:
 	_detour_waypoints.clear()
@@ -418,10 +462,16 @@ func end_purchase_visit() -> void:
 ## La resolución visual ocurre antes de la salida. Mantiene la regla económica
 ## en el manager y sólo presenta pago o frustración en el personaje.
 func resolve_purchase_visit(reaction: String) -> void:
+	resolve_purchase_visit_with_departure(reaction, "")
+
+## The manager owns the outcome and supplies the copy before the visitor starts
+## walking out. This keeps the bubble contextual for the whole exit route.
+func resolve_purchase_visit_with_departure(reaction: String, departure_message: String) -> void:
 	_detour_waypoints.clear()
 	_consecutive_collisions = 0
 	velocity = Vector3.ZERO
 	_is_browse_visit = false
+	_departure_message = departure_message.strip_edges()
 	set_attention_indicator(reaction == "checkout", "Pago confirmado." if reaction == "checkout" else "No llegaremos a un acuerdo.")
 	_show_profile_visual(reaction, false)
 	_reaction_time_remaining = 1.35
@@ -431,7 +481,7 @@ func leave_store() -> void:
 	_detour_waypoints.clear()
 	_consecutive_collisions = 0
 	_is_browse_visit = false
-	set_attention_indicator(true, "Volveré cuando encuentre\nla pieza perfecta.")
+	set_attention_indicator(true, _departure_message if not _departure_message.is_empty() else "Volveré cuando encuentre\nla pieza perfecta.")
 	# Salida en dos tramos: posición interior de la puerta y exterior.
 	_destination = entrance_position
 	_state = State.WALKING_TO_EXIT_DOOR

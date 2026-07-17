@@ -401,7 +401,24 @@ func _make_auction_card(snapshot: Dictionary) -> PanelContainer:
 	price_label.text = _format_money(current_bid)
 	price_label.add_theme_font_size_override("font_size", 24)
 	price_label.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35))
-	column.add_child(price_label)
+	price_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var price_row := HBoxContainer.new()
+	price_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	price_row.add_theme_constant_override("separation", 12)
+	price_row.add_child(price_label)
+	var bid := Button.new()
+	bid.text = "Pujar %s" % _format_money(minimum_bid) if String(snapshot.get("phase", "")) == "active" else "Lote cerrado"
+	bid.disabled = not GameState.can_access_commerce() or String(snapshot.get("phase", "")) != "active" or not GameState.carried_watch.is_empty() or not GameState.can_make_voluntary_payment(minimum_bid)
+	_configure_bid_cta(bid)
+	bid.mouse_filter = Control.MOUSE_FILTER_STOP
+	# Keep the bid control tooltip-free; its visible price already states the
+	# required minimum bid.
+	bid.tooltip_text = ""
+	bid.custom_minimum_size = Vector2(145, 38)
+	bid.size_flags_horizontal = Control.SIZE_SHRINK_END
+	bid.pressed.connect(_place_bid.bind(String(snapshot.get("instance_id", ""))))
+	price_row.add_child(bid)
+	column.add_child(price_row)
 	var secondary := Label.new()
 	secondary.text = "Lidera %s · Est. %s–%s" % [bidder, _format_money(int(snapshot.get("estimated_low", 0))), _format_money(int(snapshot.get("estimated_high", 0)))]
 	secondary.add_theme_font_size_override("font_size", 12)
@@ -411,24 +428,6 @@ func _make_auction_card(snapshot: Dictionary) -> PanelContainer:
 	player_bid_label.add_theme_font_size_override("font_size", 11)
 	column.add_child(player_bid_label)
 	column.add_child(_make_valuation_label(snapshot.get("valuation", {})))
-	var bid := Button.new()
-	bid.text = "Pujar %s" % _format_money(minimum_bid) if String(snapshot.get("phase", "")) == "active" else "Lote cerrado"
-	bid.disabled = String(snapshot.get("phase", "")) != "active" or not GameState.carried_watch.is_empty() or not GameState.can_make_voluntary_payment(minimum_bid)
-	_configure_bid_cta(bid)
-	bid.mouse_filter = Control.MOUSE_FILTER_STOP
-	# A native tooltip opens over the lower part of this CTA when the card is at
-	# the bottom of the modal. It then steals hover/click input from the button.
-	# Keep the bid control tooltip-free; its visible price already states the
-	# required minimum bid.
-	bid.tooltip_text = ""
-	# Match the native Button rect to the full visual CTA height. The grid may
-	# give cards additional vertical space, but it must never stretch the drawn
-	# CTA beyond this actual Godot input rect.
-	bid.custom_minimum_size = Vector2(0, 42)
-	bid.size_flags_vertical = Control.SIZE_SHRINK_END
-	bid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bid.pressed.connect(_place_bid.bind(String(snapshot.get("instance_id", ""))))
-	column.add_child(bid)
 	_auction_cards[String(snapshot.get("instance_id", ""))] = {
 		"chip": chip, "bid_caption": bid_caption, "price": price_label, "secondary": secondary,
 		"player_bid": player_bid_label, "bid": bid,
@@ -714,6 +713,9 @@ func _auction_snapshots() -> Array[Dictionary]:
 	return snapshots
 
 func _place_bid(instance_id: String) -> void:
+	if not GameState.can_access_commerce():
+		_notify("Instala un Punto de venta antes de participar en pujas.", "error")
+		return
 	var manager := _auction_manager()
 	if manager == null or not manager.has_method(&"place_player_bid"):
 		_notify("La mesa de subasta no está disponible todavía.", "error")
@@ -917,7 +919,7 @@ func _refresh_auction_card(card: Dictionary, snapshot: Dictionary) -> void:
 	player_bid_label.add_theme_color_override("font_color", Color(0.67, 0.88, 0.65) if bidder == "Tú" else Color(1.0, 0.66, 0.42))
 	var bid := card["bid"] as Button
 	bid.text = "Pujar %s" % _format_money(minimum_bid) if phase == "active" else "Lote cerrado"
-	bid.disabled = phase != "active" or not GameState.carried_watch.is_empty() or not GameState.can_make_voluntary_payment(minimum_bid)
+	bid.disabled = not GameState.can_access_commerce() or phase != "active" or not GameState.carried_watch.is_empty() or not GameState.can_make_voluntary_payment(minimum_bid)
 	bid.tooltip_text = ""
 
 func _on_auction_resolved(_result: Variant = null) -> void:

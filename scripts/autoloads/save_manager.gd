@@ -49,7 +49,7 @@ func load_game() -> bool:
 		_last_saved_payload = JSON.stringify(GameState.export_state())
 		# Saves before review ratings need one write so the new independent state is
 		# present even if the player does not trigger another mutation this session.
-		if GameState.has_pending_display_capacity_migration() or not state.has("customer_reviews") or not state.has("next_customer_name_index"):
+		if GameState.has_pending_display_capacity_migration() or not state.has("customer_reviews") or not state.has("next_customer_name_index") or not state.has("visitor_sales_count"):
 			_last_saved_payload = ""
 			if save_game():
 				GameState.mark_display_capacity_migration_saved()

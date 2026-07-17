@@ -94,8 +94,7 @@ func _start_placement_for_installation(definition: FacilityDefinition, moving_in
 	_moving_installation_id = moving_installation_id
 	_rotation_y = _rotation_for_installation(moving_installation_id)
 	_ghost = GhostPreview3D.new()
-	var visual := definition.visual_scene.instantiate() as Node3D
-	visual.scale = definition.visual_scale
+	var visual := _create_facility_visual(definition)
 	_ghost.set_visual(visual)
 	installation_container.add_child(_ghost)
 	_active = true
@@ -201,7 +200,7 @@ func _render_installation(installation: Dictionary) -> void:
 	for definition in facility_definitions:
 		if definition == null or definition.item_id != item_id:
 			continue
-		var visual := definition.visual_scene.instantiate() as Node3D
+		var visual := _create_facility_visual(definition)
 		installation_container.add_child(visual)
 		visual.add_to_group("world_selectable_facility")
 		if definition.item_id == GameState.POINT_OF_SALE_FACILITY_ID:
@@ -209,12 +208,10 @@ func _render_installation(installation: Dictionary) -> void:
 		elif definition.is_display_facility():
 			visual.add_to_group("customer_display_counter")
 		visual.set_meta("selection_id", installation_id)
-		visual.set_meta("facility_visual_scale", definition.visual_scale)
 		visual.global_transform = TransformSerialization.deserialize(installation.get("transform", {}))
-		# Saves made before a model scale/pivot correction stored an older floor height.
-		if visual.global_position.y < definition.floor_offset:
-			visual.global_position.y = definition.floor_offset
-		visual.scale = definition.visual_scale
+		# The vertical anchor belongs to the facility definition, not to a save. This
+		# lets model pivot corrections also fix facilities already placed in a save.
+		visual.global_position.y = definition.floor_offset
 		_add_integrated_light(visual, definition.item_id)
 		_add_selection_collider(visual, installation_id, installation.get("footprint", {}))
 		_rendered_installations[installation_id] = visual
@@ -225,7 +222,19 @@ func _on_facility_installation_updated(installation: Dictionary) -> void:
 	var visual: Node3D = _rendered_installations.get(installation_id)
 	if visual != null and is_instance_valid(visual):
 		visual.global_transform = TransformSerialization.deserialize(installation.get("transform", {}))
-		visual.scale = visual.get_meta("facility_visual_scale", Vector3.ONE)
+
+func _create_facility_visual(definition: FacilityDefinition) -> Node3D:
+	# The outer node is the unscaled gameplay anchor: slots, selection and the
+	# saved transform remain in world units. Only the imported model is scaled.
+	var root := Node3D.new()
+	root.name = "FacilityVisual"
+	var model := definition.visual_scene.instantiate() as Node3D
+	if model != null:
+		model.name = "FacilityModel"
+		model.top_level = false
+		model.scale = definition.visual_scale
+		root.add_child(model)
+	return root
 
 func _on_facility_installation_removed(installation_id: String, _refund: int) -> void:
 	var visual: Node3D = _rendered_installations.get(installation_id)
@@ -252,9 +261,7 @@ func _add_selection_collider(visual: Node3D, installation_id: String, footprint:
 	body.collision_layer = FACILITY_SELECTION_MASK | 8 # FacilitySelection + WorldSolid.
 	body.collision_mask = 0
 	body.set_meta("installation_id", installation_id)
-	# The visual can have an import correction scale; cancel it for the footprint,
-	# which is already stored in world units.
-	body.scale = Vector3(1.0 / visual.scale.x, 1.0 / visual.scale.y, 1.0 / visual.scale.z)
+	# The root is deliberately unscaled, so this footprint stays in world units.
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
 	var local_footprint := _local_footprint(footprint, visual)
@@ -296,7 +303,10 @@ func _select_at_mouse() -> bool:
 	var customer_query := PhysicsRayQueryParameters3D.create(origin, end, CUSTOMER_SELECTION_MASK)
 	var customer_hit := camera.get_world_3d().direct_space_state.intersect_ray(customer_query)
 	if not customer_hit.is_empty() and customer_hit.collider is CustomerVisitor:
-		EventBus.world_selection_changed.emit("customer", "shop_customer", customer_hit.position + Vector3.UP * 0.9)
+		var customer := customer_hit.collider as CustomerVisitor
+		# Preserve the physical visitor identity so presentation can resolve the
+		# corresponding negotiation instead of assuming the first one is selected.
+		EventBus.world_selection_changed.emit("customer", customer.visitor_instance_id, customer_hit.position + Vector3.UP * 0.9)
 		return true
 	# Watches have a dedicated layer and always win over their containing vitrina.
 	var watch_query := PhysicsRayQueryParameters3D.create(origin, end, WATCH_SELECTION_MASK)

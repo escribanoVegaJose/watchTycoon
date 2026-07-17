@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="FacilityDefinition" format=3]
+
+[ext_resource type="Script" uid="uid://dk55n3smfeikw" path="res://scripts/gameplay/facility_definition.gd" id="1_definition"]
+[ext_resource type="PackedScene" path="res://assets/meshy/godot_ready/vitrina_m.glb" id="2_visual"]
+[ext_resource type="Texture2D" uid="uid://bur6ngdq3nmwm" path="res://assets/icons/facilities.svg" id="3_icon"]
+
+[resource]
+script = ExtResource("1_definition")
+item_id = "display_case_medium_04"
+display_name = "Vitrina de dos niveles"
+catalog_description = "Una vitrina de cuatro huecos, repartidos en dos filas para exhibir una colección concisa."
+catalog_icon = ExtResource("3_icon")
+price = 1100
+visual_scene = ExtResource("2_visual")
+visual_scale = Vector3(1, 1, 1)
+# La base del modelo está a -0,951 unidades respecto a su pivote.
+floor_offset = 0.96
+footprint_half_extents = Vector2(1.0, 0.55)
+display_slots = Array[Dictionary]([{
+"slot_id": "display_case_medium_04_top_left",
+"position": Vector3(-0.32, 0.9, 0),
+"scale": Vector3(1, 1, 1)
+}, {
+"slot_id": "display_case_medium_04_top_right",
+"position": Vector3(0.32, 0.9, 0),
+"scale": Vector3(1, 1, 1)
+}, {
+"slot_id": "display_case_medium_04_bottom_left",
+"position": Vector3(-0.32, 0.25, 0),
+"scale": Vector3(1, 1, 1)
+}, {
+"slot_id": "display_case_medium_04_bottom_right",
+"position": Vector3(0.32, 0.25, 0),
+"scale": Vector3(1, 1, 1)
+}])

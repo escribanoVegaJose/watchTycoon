@@ -11,7 +11,7 @@ const SUPPORTED_LOCALES := ["es", "en"]
 
 var locale := "es"
 var music_muted := false
-var music_volume := 70.0
+var music_volume := 30.0
 var effects_volume := 70.0
 
 func _ready() -> void:
@@ -21,7 +21,7 @@ func _ready() -> void:
 	if config.load(SETTINGS_PATH) == OK:
 		locale = String(config.get_value("preferences", "locale", "es"))
 		music_muted = bool(config.get_value("preferences", "music_muted", false))
-		music_volume = clampf(float(config.get_value("preferences", "music_volume", 70.0)), 0.0, 100.0)
+		music_volume = clampf(float(config.get_value("preferences", "music_volume", 30.0)), 0.0, 100.0)
 		effects_volume = clampf(float(config.get_value("preferences", "effects_volume", 70.0)), 0.0, 100.0)
 	if not locale in SUPPORTED_LOCALES:
 		locale = "es"

@@ -1,7 +1,10 @@
 extends Node
 
 const STARTING_MONEY := 5000
-const STARTING_REPUTATION := 0
+const STARTING_REPUTATION := 1
+const MAX_REPUTATION_LEVEL := 12
+## Índice cero = REP 1. Cada hito expresa las ventas acumuladas necesarias.
+const REPUTATION_SALES_THRESHOLDS := [0, 5, 15, 30, 50, 75, 105, 140, 180, 225, 275, 330]
 const MAIN_DOOR_PRICE := 850
 const POINT_OF_SALE_FACILITY_ID := "counter_01"
 const DEFAULT_WATCH_MODEL_PATH := "res://assets/meshy/godot_ready/nexora-b.glb"
@@ -9,6 +12,8 @@ const WatchValuation = preload("res://scripts/gameplay/watch_valuation.gd")
 
 var money := STARTING_MONEY
 var reputation := STARTING_REPUTATION
+## Solo las ventas cobradas a visitantes hacen avanzar la reputación de la maison.
+var visitor_sales_count := 0
 ## Calendar day is persisted separately from the real-time progress within a day.
 var current_day := 1
 var has_main_door := false
@@ -26,8 +31,12 @@ var displayed_watches: Array[Dictionary] = []
 const DISPLAY_CAPACITY := 6
 const DISPLAY_FACILITY_DEFINITIONS := {
 	"display_counter_01": preload("res://data/facilities/display_counter_01.tres"),
-	"display_case_glass_vertical_01": preload("res://data/facilities/display_case_glass_vertical_01.tres"),
+	"display_case_small_02": preload("res://data/facilities/display_case_small_02.tres"),
+	"display_case_medium_04": preload("res://data/facilities/display_case_medium_04.tres"),
 }
+## These catalogue items are no longer available. Filtering them during load keeps
+## legacy saves from retaining invisible furniture that blocks new placements.
+const RETIRED_FACILITY_ITEM_IDS := ["display_case_glass_vertical_01", "display_case_gallery_18_01"]
 var _display_capacity_migration_pending := false
 ## Persisted auction instances only; AuctionManager owns their transitions.
 var active_auctions: Array[Dictionary] = []
@@ -72,6 +81,7 @@ func _ready() -> void:
 func reset_state() -> void:
 	money = STARTING_MONEY
 	reputation = STARTING_REPUTATION
+	visitor_sales_count = 0
 	current_day = 1
 	has_main_door = false
 	hidden_built_elements.clear()
@@ -102,6 +112,36 @@ func reset_state() -> void:
 	last_collector_spawn_day = -1
 	_emit_stats()
 	_emit_inventory()
+
+func get_reputation_level() -> int:
+	return reputation
+
+func get_visitor_sales_count() -> int:
+	return visitor_sales_count
+
+func get_sales_required_for_level(level: int) -> int:
+	var index := clampi(level - 1, 0, REPUTATION_SALES_THRESHOLDS.size() - 1)
+	return int(REPUTATION_SALES_THRESHOLDS[index])
+
+func get_reputation_progress() -> Dictionary:
+	var level := get_reputation_level()
+	var current_sales := get_sales_required_for_level(level)
+	var is_max_level := level >= MAX_REPUTATION_LEVEL
+	return {
+		"level": level,
+		"sales": visitor_sales_count,
+		"current_level_sales": current_sales,
+		"next_level_sales": current_sales if is_max_level else get_sales_required_for_level(level + 1),
+		"is_max_level": is_max_level,
+	}
+
+func _recalculate_reputation_level() -> void:
+	reputation = STARTING_REPUTATION
+	for level in range(2, MAX_REPUTATION_LEVEL + 1):
+		if visitor_sales_count >= get_sales_required_for_level(level):
+			reputation = level
+		else:
+			break
 	_emit_carried_watch()
 	_notify_customer_reviews_changed()
 	EventBus.facade_installations_reloaded.emit()
@@ -320,9 +360,10 @@ func set_wall_finish(wall_id: String, finish_id: String) -> bool:
 
 func export_state() -> Dictionary:
 	return {
-		"version": 15,
+		"version": 16,
 		"money": money,
 		"reputation": reputation,
+		"visitor_sales_count": visitor_sales_count,
 		"current_day": current_day,
 		"has_main_door": has_main_door,
 		"hidden_built_elements": hidden_built_elements.duplicate(true),
@@ -356,7 +397,9 @@ func import_state(state: Dictionary) -> bool:
 	if state.is_empty():
 		return false
 	money = _read_int(state.get("money"), STARTING_MONEY)
-	reputation = _read_int(state.get("reputation"), STARTING_REPUTATION)
+	var legacy_reputation := _read_int(state.get("reputation"), STARTING_REPUTATION)
+	visitor_sales_count = _read_non_negative_int(state.get("visitor_sales_count"), floori(maxi(0, legacy_reputation) / 2.0))
+	_recalculate_reputation_level()
 	# Older saves have no calendar value and therefore start on day one.
 	current_day = _read_positive_int(state.get("current_day"), 1)
 	has_main_door = bool(state.get("has_main_door", false))
@@ -441,6 +484,8 @@ func import_state(state: Dictionary) -> bool:
 	if raw_facilities is Array:
 		for raw_facility: Variant in raw_facilities:
 			if not raw_facility is Dictionary:
+				continue
+			if String(raw_facility.get("item_id", "")) in RETIRED_FACILITY_ITEM_IDS:
 				continue
 			var facility := _sanitize_facility_installation(raw_facility)
 			if facility.is_empty():
@@ -710,13 +755,14 @@ func get_displayed_watch(unit_id: String) -> Dictionary:
 	var index := _displayed_watch_index(unit_id)
 	return displayed_watches[index].duplicate(true) if index >= 0 else {}
 
-## The selected item remains physically visible, but cannot be moved while a
-## visitor is carrying its purchase decision to the counter.
+## La pieza sólo queda bloqueada cuando el visitante ya ha terminado de verla
+## y está en caja. Esperar fuera o entrar no equivale a una reserva.
 func is_visitor_reserved(unit_id: String) -> bool:
 	if unit_id.is_empty():
 		return false
 	for negotiation in visitor_negotiations:
-		if String(negotiation.get("unit_id", "")) == unit_id:
+		var state := String(negotiation.get("state", ""))
+		if String(negotiation.get("unit_id", "")) == unit_id and (state == "waiting" or state == "active"):
 			return true
 	return false
 
@@ -774,7 +820,7 @@ func complete_sale(listed_index: int) -> bool:
 	_emit_inventory()
 	return true
 
-func complete_visitor_sale(unit_id: String, final_price: int, reputation_gain: int) -> bool:
+func complete_visitor_sale(unit_id: String, final_price: int) -> bool:
 	if unit_id.is_empty() or final_price <= 0:
 		return false
 	var listed_index := -1
@@ -792,7 +838,8 @@ func complete_visitor_sale(unit_id: String, final_price: int, reputation_gain: i
 	displayed_watch = displayed_watches[0].duplicate(true) if not displayed_watches.is_empty() else {}
 	_update_history_sale(unit_id, final_price)
 	money += final_price
-	reputation += maxi(0, reputation_gain)
+	visitor_sales_count += 1
+	_recalculate_reputation_level()
 	finance_period["sales"] = int(finance_period["sales"]) + final_price
 	EventBus.watch_display_changed.emit(get_watch_display_snapshot())
 	EventBus.purchase_history_changed.emit()
@@ -872,6 +919,7 @@ func _sanitize_visitor_negotiation(raw: Variant) -> Dictionary:
 	var max_patience := clampi(_read_positive_int(negotiation.get("max_patience"), 3), 1, 5)
 	return {
 		"profile_id": profile_id, "unit_id": unit_id,
+		"target_facility_installation_id": String(negotiation.get("target_facility_installation_id", "")),
 		"customer_name": _sanitize_customer_name(negotiation.get("customer_name", "")),
 		"search_intent": negotiation.get("search_intent", {}).duplicate(true) if negotiation.get("search_intent", {}) is Dictionary else {},
 		"state": String(negotiation.get("state", "waiting")),

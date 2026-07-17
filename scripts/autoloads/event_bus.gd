@@ -77,6 +77,9 @@ signal monthly_settlement_completed(settlement: Dictionary, resulting_balance: i
 signal visitor_negotiation_changed(snapshot: Dictionary)
 signal visitor_negotiation_action_requested(action: String, amount: int)
 signal visitor_negotiation_resolved(result: Dictionary)
+## Successful visitor sales carry an immutable item snapshot for presentation.
+## The item may already have been removed from the display when UI receives this.
+signal visitor_sale_completed(presentation: Dictionary)
 ## El HUD solicita la admisión; VisitorNegotiationManager valida la visita exterior.
 signal visitor_door_open_requested
 ## Presentación de audio, sin reglas de negocio ni referencias a la escena.
